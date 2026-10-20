@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
+import { io } from "next/cache";
 import { cookies } from "next/headers";
 
 import { env } from "@/lib/env";
@@ -8,6 +9,9 @@ import type { Database } from "@/lib/supabase/database.types";
 
 export async function createClient() {
   const cookieStore = await cookies();
+  // Supabase reads the clock (Date.now) to check token expiry. io() keeps that
+  // out of prerendering; at request time it resolves immediately.
+  await io();
 
   return createServerClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,

@@ -5,15 +5,17 @@ type NavItem = { href: string; label: string };
 export function DashboardShell({
   title,
   nav,
+  footer,
   children,
 }: {
   title: string;
   nav: NavItem[];
+  footer?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <div className="flex min-h-full flex-1 flex-col md:flex-row">
-      <aside className="border-b md:w-56 md:border-r md:border-b-0">
+      <aside className="flex flex-col border-b md:w-56 md:border-r md:border-b-0">
         <div className="px-4 py-4 font-heading font-semibold">{title}</div>
         <nav className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-col">
           {nav.map((item) => (
@@ -26,6 +28,7 @@ export function DashboardShell({
             </Link>
           ))}
         </nav>
+        {footer && <div className="px-2 pb-2 md:mt-auto">{footer}</div>}
       </aside>
       <main className="flex-1 p-4 md:p-8">{children}</main>
     </div>

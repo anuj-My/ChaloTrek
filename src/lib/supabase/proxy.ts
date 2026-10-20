@@ -32,7 +32,14 @@ export async function updateSession(request: NextRequest) {
 
   // Don't put code between createServerClient and getClaims: it can make
   // users get logged out at random.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
 
-  return response;
+  return { response, userId: data?.claims.sub ?? null };
+}
+
+// A redirect that keeps any refreshed session cookies from `from`.
+export function redirectWithCookies(url: URL, from: NextResponse) {
+  const redirect = NextResponse.redirect(url);
+  from.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+  return redirect;
 }

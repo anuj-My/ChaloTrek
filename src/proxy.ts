@@ -1,9 +1,42 @@
 import type { NextRequest } from "next/server";
 
-import { updateSession } from "@/lib/supabase/proxy";
+import { safeNextPath } from "@/lib/safe-next-path";
+import { redirectWithCookies, updateSession } from "@/lib/supabase/proxy";
+
+// Logged-out visitors are sent to /login before these pages render. This is
+// only a fast first check: pages and actions verify the user again, and RLS
+// protects the data itself.
+const PROTECTED_PREFIXES = ["/dashboard", "/admin", "/my-bookings"];
 
 export async function proxy(request: NextRequest) {
-  return updateSession(request);
+  const { response, userId } = await updateSession(request);
+  const { pathname, search } = request.nextUrl;
+
+  const isProtected = PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+
+  // If the callback URL isn't in Supabase's Redirect URLs list, Supabase sends
+  // the login code to the Site URL (the homepage) instead. Finish the login.
+  const code = request.nextUrl.searchParams.get("code");
+  if (pathname === "/" && code) {
+    const url = new URL("/auth/callback", request.url);
+    url.searchParams.set("code", code);
+    return redirectWithCookies(url, response);
+  }
+
+  if (!userId && isProtected) {
+    const url = new URL("/login", request.url);
+    url.searchParams.set("next", pathname + search);
+    return redirectWithCookies(url, response);
+  }
+
+  if (userId && pathname === "/login") {
+    const next = safeNextPath(request.nextUrl.searchParams.get("next"));
+    return redirectWithCookies(new URL(next, request.url), response);
+  }
+
+  return response;
 }
 
 export const config = {
