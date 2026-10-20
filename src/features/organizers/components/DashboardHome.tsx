@@ -1,5 +1,34 @@
-import { PagePlaceholder } from "@/components/shared/PagePlaceholder";
+import { getUser } from "@/features/auth/queries";
 
-export function DashboardHome() {
-  return <PagePlaceholder title="Dashboard" description="Bookings, seats left and amount collected across your batches." />;
+import { getMyOrganizer } from "../queries";
+import { KycStatusBanner } from "./KycStatus";
+import { OrganizerProfileForm } from "./OrganizerProfileForm";
+
+export async function DashboardHome() {
+  const organizer = await getMyOrganizer();
+
+  if (!organizer) {
+    const user = await getUser();
+    return (
+      <div className="max-w-xl space-y-6">
+        <div className="space-y-1">
+          <h1 className="font-heading text-2xl font-semibold">Set up your organizer profile</h1>
+          <p className="text-muted-foreground">
+            This is what trekkers see on your booking pages. It takes a minute.
+          </p>
+        </div>
+        <OrganizerProfileForm defaultEmail={user?.email} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <h1 className="font-heading text-2xl font-semibold">{organizer.name}</h1>
+        <p className="text-sm text-muted-foreground">chalotrek.in/o/{organizer.slug}</p>
+      </div>
+      <KycStatusBanner organizer={organizer} />
+    </div>
+  );
 }
