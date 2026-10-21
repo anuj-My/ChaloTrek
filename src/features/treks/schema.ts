@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import { slugSchema } from "@/features/organizers/schema";
 
+import { MAX_TREK_PHOTOS } from "./photos";
+
 export const REGIONS = [
   "Uttarakhand",
   "Himachal Pradesh",
@@ -70,4 +72,11 @@ export const trekSchema = z.object({
 export const trekStatusSchema = z.object({
   trek_id: z.uuid(),
   status: z.enum(["draft", "published", "archived"]),
+});
+
+export const trekPhotoSchema = z.object({ trek_id: z.uuid(), path: z.string().min(1) });
+
+export const addTrekPhotosSchema = z.object({
+  trekId: z.uuid(),
+  paths: z.array(z.string().max(200)).min(1).max(MAX_TREK_PHOTOS),
 });

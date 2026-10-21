@@ -4,6 +4,7 @@ import { TrekBatches } from "@/features/batches/components/TrekBatches";
 
 import { getMyTrek, listCancellationPolicies } from "../queries";
 import { TrekForm } from "./TrekForm";
+import { TrekPhotos } from "./TrekPhotos";
 import { TrekStatusPanel } from "./TrekStatus";
 
 export async function TrekEditor({ params }: { params: Promise<{ trekId: string }> }) {
@@ -24,6 +25,7 @@ export async function TrekEditor({ params }: { params: Promise<{ trekId: string 
 
       <TrekStatusPanel trek={trek} organizer={organizer} />
       <TrekBatches trek={trek} />
+      <TrekPhotos organizerId={organizer.id} trekId={trek.id} photos={trek.photos} />
 
       <section className="space-y-4">
         <h2 className="font-heading text-lg font-semibold">Trek details</h2>
