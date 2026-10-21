@@ -18,9 +18,13 @@ export async function TrekEditor({ params }: { params: Promise<{ trekId: string 
           ← Treks
         </Link>
         <h1 className="font-heading text-2xl font-semibold">{trek.name}</h1>
-        <p className="text-sm text-muted-foreground">
+        <Link
+          href={`/o/${organizer.slug}/${trek.slug}`}
+          target="_blank"
+          className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        >
           chalotrek.in/o/{organizer.slug}/{trek.slug}
-        </p>
+        </Link>
       </div>
 
       <TrekStatusPanel trek={trek} organizer={organizer} />
