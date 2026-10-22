@@ -87,6 +87,7 @@ export type Database = {
           hold_expires_at: string | null
           id: string
           num_people: number
+          paid_offline: boolean
           paid_paise: number
           source: Database["public"]["Enums"]["booking_source"]
           status: Database["public"]["Enums"]["booking_status"]
@@ -103,6 +104,7 @@ export type Database = {
           hold_expires_at?: string | null
           id?: string
           num_people: number
+          paid_offline?: boolean
           paid_paise?: number
           source?: Database["public"]["Enums"]["booking_source"]
           status?: Database["public"]["Enums"]["booking_status"]
@@ -119,6 +121,7 @@ export type Database = {
           hold_expires_at?: string | null
           id?: string
           num_people?: number
+          paid_offline?: boolean
           paid_paise?: number
           source?: Database["public"]["Enums"]["booking_source"]
           status?: Database["public"]["Enums"]["booking_status"]
@@ -514,6 +517,7 @@ export type Database = {
           hold_expires_at: string | null
           id: string
           num_people: number
+          paid_offline: boolean
           paid_paise: number
           source: Database["public"]["Enums"]["booking_source"]
           status: Database["public"]["Enums"]["booking_status"]
@@ -535,6 +539,32 @@ export type Database = {
       owns_organizer: { Args: { org_id: string }; Returns: boolean }
       owns_trek: { Args: { t_id: string }; Returns: boolean }
       owns_trek_photo_path: { Args: { path: string }; Returns: boolean }
+      record_offline_payment: {
+        Args: { p_booking_id: string; p_paid_paise: number }
+        Returns: {
+          batch_id: string
+          booking_number: number
+          contact_email: string
+          contact_phone: string
+          created_at: string
+          hold_expires_at: string | null
+          id: string
+          num_people: number
+          paid_offline: boolean
+          paid_paise: number
+          source: Database["public"]["Enums"]["booking_source"]
+          status: Database["public"]["Enums"]["booking_status"]
+          total_paise: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       seats_left: {
         Args: { "": Database["public"]["Tables"]["batches"]["Row"] }
         Returns: {

@@ -104,7 +104,8 @@ function PaymentPanel({ booking, status }: { booking: MyBooking; status: Booking
       {status === "expired" && (
         <div className="space-y-3 border-t pt-3">
           <p className="text-sm text-muted-foreground">
-            Your seat hold ran out before payment, so this booking wasn&apos;t completed.
+            Your seat hold ran out before payment, so this booking wasn&apos;t completed. If you&apos;ve paid the
+            organizer directly, they can still confirm it while seats are free.
           </p>
           <Link href={bookAgain} className={buttonVariants({ variant: "outline" })}>
             Book again

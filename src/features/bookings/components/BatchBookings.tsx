@@ -4,8 +4,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { formatDateRange, formatDateTime, formatRupees } from "@/lib/format";
 
 import { getMyBatchBookings, type OrganizerBooking } from "../queries";
-import { bookingReference } from "../status";
+import { amountDueNowPaise, bookingReference } from "../status";
 import { BookingStatusBadge } from "./BookingStatusBadge";
+import { OfflinePaymentForm } from "./OfflinePaymentForm";
 
 // One batch for the organizer: totals, everyone going, and each booking.
 export async function BatchBookings({ params }: { params: Promise<{ batchId: string }> }) {
@@ -103,7 +104,7 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
 
           <section className="space-y-3">
             <h2 className="font-heading text-lg font-semibold">Bookings ({active.length})</h2>
-            <BookingList bookings={active} />
+            <BookingList bookings={active} batch={batch} />
           </section>
         </>
       )}
@@ -114,17 +115,19 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
             Not completed or cancelled ({batch.otherBookings.length})
           </summary>
           <p className="py-2 text-sm text-muted-foreground">
-            These didn&apos;t finish payment, so they don&apos;t hold seats. Useful when someone messages you with a
-            booking ID.
+            These didn&apos;t finish payment, so they don&apos;t hold seats. If someone messages you a booking ID and
+            pays you directly, find it here and mark it as paid.
           </p>
-          <BookingList bookings={batch.otherBookings} />
+          <BookingList bookings={batch.otherBookings} batch={batch} />
         </details>
       )}
     </div>
   );
 }
 
-function BookingList({ bookings }: { bookings: OrganizerBooking[] }) {
+type BatchPrices = { price_paise: number; deposit_paise: number | null; status: string };
+
+function BookingList({ bookings, batch }: { bookings: OrganizerBooking[]; batch: BatchPrices }) {
   return (
     <ul className="divide-y rounded-lg border">
       {bookings.map((booking) => (
@@ -146,11 +149,37 @@ function BookingList({ bookings }: { bookings: OrganizerBooking[] }) {
               {booking.num_people} {booking.num_people === 1 ? "person" : "people"} ·{" "}
               {formatRupees(booking.total_paise)}
             </p>
-            {booking.paid_paise > 0 && <p>{formatRupees(booking.paid_paise)} paid</p>}
+            {booking.paid_paise > 0 && (
+              <p>
+                {formatRupees(booking.paid_paise)} paid{booking.paid_offline && " (UPI/cash)"}
+                {booking.paid_paise < booking.total_paise &&
+                  ` · ${formatRupees(booking.total_paise - booking.paid_paise)} due`}
+              </p>
+            )}
             <p>Booked {formatDateTime(booking.created_at)}</p>
+            {canRecordPayment(booking, batch) && (
+              <div className="pt-2 sm:flex sm:justify-end">
+                <OfflinePaymentForm
+                  bookingId={booking.id}
+                  totalPaise={booking.total_paise}
+                  confirmed={booking.displayStatus === "confirmed"}
+                  suggestedPaise={
+                    booking.displayStatus === "confirmed"
+                      ? booking.paid_paise
+                      : amountDueNowPaise(batch, booking.num_people)
+                  }
+                />
+              </div>
+            )}
           </div>
         </li>
       ))}
     </ul>
   );
+}
+
+// Payments can be recorded on any booking that isn't cancelled or refunded,
+// unless the batch itself was cancelled.
+function canRecordPayment(booking: OrganizerBooking, batch: BatchPrices) {
+  return batch.status !== "cancelled" && ["held", "expired", "confirmed"].includes(booking.displayStatus);
 }

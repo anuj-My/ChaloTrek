@@ -54,3 +54,14 @@ export function bookingFromFormData(formData: FormData) {
     ),
   };
 }
+
+// Organizer records money received outside Chalo Trek: the total so far, in
+// rupees, converted to paise.
+export const offlinePaymentSchema = z.object({
+  booking_id: z.uuid(),
+  amount: z.coerce
+    .number<string>("Enter the amount")
+    .int("Whole rupees only")
+    .min(1, "Enter the amount")
+    .transform((rupees) => rupees * 100),
+});
