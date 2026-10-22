@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import type { PublicTrek } from "@/features/treks/queries";
 import { formatDateRange, formatRupees } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 type Props = { batches: PublicTrek["batches"]; trekPath: string };
 
@@ -21,9 +22,12 @@ export function BatchOptions({ batches, trekPath }: Props) {
             const seats = batch.seats_left ?? 0;
             const bookable = batch.status === "open" && seats > 0;
             return (
-              <li key={batch.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+              <li key={batch.id} className="space-y-3 py-4 first:pt-0 last:pb-0">
                 <div className="space-y-1">
-                  <p className="font-medium">{formatDateRange(batch.start_date, batch.end_date)}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-medium">{formatDateRange(batch.start_date, batch.end_date)}</p>
+                    {!bookable && <Badge variant="secondary">{batch.status === "closed" ? "Closed" : "Full"}</Badge>}
+                  </div>
                   <p className="text-sm">
                     <span className="font-medium">{formatRupees(batch.price_paise)}</span>
                     <span className="text-muted-foreground"> per person</span>
@@ -37,12 +41,10 @@ export function BatchOptions({ batches, trekPath }: Props) {
                     </p>
                   )}
                 </div>
-                {bookable ? (
-                  <Link href={`${trekPath}/book/${batch.id}`} className={buttonVariants()}>
-                    Book
+                {bookable && (
+                  <Link href={`${trekPath}/book/${batch.id}`} className={cn(buttonVariants({ size: "lg" }), "w-full")}>
+                    Book this batch
                   </Link>
-                ) : (
-                  <Badge variant="secondary">{batch.status === "closed" ? "Closed" : "Full"}</Badge>
                 )}
               </li>
             );
