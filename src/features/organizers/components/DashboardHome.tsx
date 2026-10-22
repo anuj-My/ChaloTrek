@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { getUser } from "@/features/auth/queries";
 
 import { getMyOrganizer } from "../queries";
@@ -26,7 +28,17 @@ export async function DashboardHome() {
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="font-heading text-2xl font-semibold">{organizer.name}</h1>
-        <p className="text-sm text-muted-foreground">chalotrek.in/o/{organizer.slug}</p>
+        <p className="text-sm text-muted-foreground">
+          Your page, for your Instagram bio:{" "}
+          <Link
+            href={`/o/${organizer.slug}`}
+            target="_blank"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            chalotrek.in/o/{organizer.slug}
+          </Link>
+          {organizer.kyc_status !== "approved" && " (goes live once your KYC is approved)"}
+        </p>
       </div>
       <KycStatusBanner organizer={organizer} />
     </div>

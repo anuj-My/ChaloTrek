@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getPublicTrek } from "@/features/treks/queries";
@@ -28,7 +29,12 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
       {/* Phones: header, batches, details. Desktop: batches in a sticky right column. */}
       <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
         <header className="min-w-0 space-y-3 lg:col-start-1">
-          <p className="text-sm text-muted-foreground">by {organizer.name}</p>
+          <p className="text-sm text-muted-foreground">
+            by{" "}
+            <Link href={`/o/${organizer.slug}`} className="underline-offset-4 hover:text-foreground hover:underline">
+              {organizer.name}
+            </Link>
+          </p>
           <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">{trek.name}</h1>
           <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
             {facts.map((fact, i) => (
