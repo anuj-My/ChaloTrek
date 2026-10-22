@@ -44,3 +44,16 @@ export function addDays(date: string, days: number) {
 export function formatDate(date: string) {
   return dayMonthYear.format(parse(date));
 }
+
+const dateTime = new Intl.DateTimeFormat("en-IN", {
+  day: "numeric",
+  month: "short",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "Asia/Kolkata",
+});
+
+// "2026-10-22T10:15:00Z" → "22 Oct, 3:45 pm" (India time)
+export function formatDateTime(timestamp: string) {
+  return dateTime.format(new Date(timestamp));
+}
