@@ -1,8 +1,10 @@
 import Link from "next/link";
 
+import { ActionButton } from "@/components/shared/ActionButton";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { formatDateRange, formatRupees } from "@/lib/format";
 
+import { cancelBooking } from "../actions";
 import { getMyBooking, type MyBooking } from "../queries";
 import { amountDueNowPaise, type BookingDisplayStatus, bookingReference } from "../status";
 import { BookingStatusBadge } from "./BookingStatusBadge";
@@ -98,6 +100,14 @@ function PaymentPanel({ booking, status }: { booking: MyBooking; status: Booking
               </>
             )}
           </p>
+          <ActionButton
+            action={cancelBooking}
+            fields={{ booking_id: booking.id }}
+            variant="ghost"
+            confirm="Cancel this booking? Your seats will be released."
+          >
+            Cancel booking
+          </ActionButton>
         </>
       )}
 
@@ -128,10 +138,16 @@ function PaymentPanel({ booking, status }: { booking: MyBooking; status: Booking
         </>
       )}
 
-      {(status === "cancelled" || status === "refunded") && (
+      {status === "cancelled" && (
         <p className="border-t pt-3 text-sm text-muted-foreground">
-          This booking was {status}.
+          {booking.cancelled_by === "trekker" ? "You cancelled this booking." : "The organizer cancelled this booking."}
+          {booking.paid_paise > 0 &&
+            ` Contact ${organizer.name} about refunding the ${formatRupees(booking.paid_paise)} you paid.`}
         </p>
+      )}
+
+      {status === "refunded" && (
+        <p className="border-t pt-3 text-sm text-muted-foreground">This booking was refunded.</p>
       )}
     </section>
   );

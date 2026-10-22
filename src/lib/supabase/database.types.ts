@@ -81,6 +81,8 @@ export type Database = {
         Row: {
           batch_id: string
           booking_number: number
+          cancelled_at: string | null
+          cancelled_by: Database["public"]["Enums"]["booking_canceller"] | null
           contact_email: string
           contact_phone: string
           created_at: string
@@ -98,6 +100,8 @@ export type Database = {
         Insert: {
           batch_id: string
           booking_number?: never
+          cancelled_at?: string | null
+          cancelled_by?: Database["public"]["Enums"]["booking_canceller"] | null
           contact_email: string
           contact_phone: string
           created_at?: string
@@ -115,6 +119,8 @@ export type Database = {
         Update: {
           batch_id?: string
           booking_number?: never
+          cancelled_at?: string | null
+          cancelled_by?: Database["public"]["Enums"]["booking_canceller"] | null
           contact_email?: string
           contact_phone?: string
           created_at?: string
@@ -511,6 +517,36 @@ export type Database = {
         Returns: {
           batch_id: string
           booking_number: number
+          cancelled_at: string | null
+          cancelled_by: Database["public"]["Enums"]["booking_canceller"] | null
+          contact_email: string
+          contact_phone: string
+          created_at: string
+          hold_expires_at: string | null
+          id: string
+          num_people: number
+          paid_offline: boolean
+          paid_paise: number
+          source: Database["public"]["Enums"]["booking_source"]
+          status: Database["public"]["Enums"]["booking_status"]
+          total_paise: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      cancel_booking: {
+        Args: { p_booking_id: string }
+        Returns: {
+          batch_id: string
+          booking_number: number
+          cancelled_at: string | null
+          cancelled_by: Database["public"]["Enums"]["booking_canceller"] | null
           contact_email: string
           contact_phone: string
           created_at: string
@@ -544,6 +580,8 @@ export type Database = {
         Returns: {
           batch_id: string
           booking_number: number
+          cancelled_at: string | null
+          cancelled_by: Database["public"]["Enums"]["booking_canceller"] | null
           contact_email: string
           contact_phone: string
           created_at: string
@@ -576,6 +614,7 @@ export type Database = {
     }
     Enums: {
       batch_status: "open" | "closed" | "cancelled"
+      booking_canceller: "organizer" | "trekker"
       booking_source: "organizer_link" | "marketplace"
       booking_status:
         | "pending"
@@ -718,6 +757,7 @@ export const Constants = {
   public: {
     Enums: {
       batch_status: ["open", "closed", "cancelled"],
+      booking_canceller: ["organizer", "trekker"],
       booking_source: ["organizer_link", "marketplace"],
       booking_status: [
         "pending",

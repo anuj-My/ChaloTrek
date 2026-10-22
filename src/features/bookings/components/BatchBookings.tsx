@@ -1,8 +1,10 @@
 import Link from "next/link";
 
+import { ActionButton } from "@/components/shared/ActionButton";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDateRange, formatDateTime, formatRupees } from "@/lib/format";
 
+import { cancelBooking } from "../actions";
 import { getMyBatchBookings, type OrganizerBooking } from "../queries";
 import { amountDueNowPaise, bookingReference } from "../status";
 import { BookingStatusBadge } from "./BookingStatusBadge";
@@ -153,12 +155,19 @@ function BookingList({ bookings, batch }: { bookings: OrganizerBooking[]; batch:
               <p>
                 {formatRupees(booking.paid_paise)} paid{booking.paid_offline && " (UPI/cash)"}
                 {booking.paid_paise < booking.total_paise &&
+                  booking.displayStatus === "confirmed" &&
                   ` · ${formatRupees(booking.total_paise - booking.paid_paise)} due`}
               </p>
             )}
             <p>Booked {formatDateTime(booking.created_at)}</p>
-            {canRecordPayment(booking, batch) && (
-              <div className="pt-2 sm:flex sm:justify-end">
+            {booking.cancelled_at && (
+              <p>
+                Cancelled {booking.cancelled_by === "trekker" ? "by the trekker" : "by you"}{" "}
+                {formatDateTime(booking.cancelled_at)}
+              </p>
+            )}
+            <div className="flex flex-wrap items-start gap-2 pt-2 sm:justify-end">
+              {canRecordPayment(booking, batch) && (
                 <OfflinePaymentForm
                   bookingId={booking.id}
                   totalPaise={booking.total_paise}
@@ -169,8 +178,18 @@ function BookingList({ bookings, batch }: { bookings: OrganizerBooking[]; batch:
                       : amountDueNowPaise(batch, booking.num_people)
                   }
                 />
-              </div>
-            )}
+              )}
+              {(booking.displayStatus === "held" || booking.displayStatus === "confirmed") && (
+                <ActionButton
+                  action={cancelBooking}
+                  fields={{ booking_id: booking.id }}
+                  variant="ghost"
+                  confirm={cancelPrompt(booking)}
+                >
+                  Cancel booking
+                </ActionButton>
+              )}
+            </div>
           </div>
         </li>
       ))}
@@ -182,4 +201,10 @@ function BookingList({ bookings, batch }: { bookings: OrganizerBooking[]; batch:
 // unless the batch itself was cancelled.
 function canRecordPayment(booking: OrganizerBooking, batch: BatchPrices) {
   return batch.status !== "cancelled" && ["held", "expired", "confirmed"].includes(booking.displayStatus);
+}
+
+function cancelPrompt(booking: OrganizerBooking) {
+  const ref = bookingReference(booking.booking_number);
+  const refund = booking.paid_paise > 0 ? ` Refund the ${formatRupees(booking.paid_paise)} they paid yourself.` : "";
+  return `Cancel ${ref}? Its seats go back on sale.${refund}`;
 }

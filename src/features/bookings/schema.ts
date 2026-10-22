@@ -65,3 +65,5 @@ export const offlinePaymentSchema = z.object({
     .min(1, "Enter the amount")
     .transform((rupees) => rupees * 100),
 });
+
+export const bookingIdSchema = z.object({ booking_id: z.uuid() });
