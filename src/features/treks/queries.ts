@@ -74,7 +74,7 @@ export const getPublicTrek = cache(async (organizerSlug: string, trekSlug: strin
     .eq("status", "published")
     .eq("organizers.slug", organizerSlug)
     .eq("organizers.kyc_status", "approved")
-    // Bookings close the day before departure (see create_booking).
+    // Bookings close the day before departure (see book_batch).
     .gt("batches.start_date", todayInIndia())
     .neq("batches.status", "cancelled")
     .order("start_date", { referencedTable: "batches" })

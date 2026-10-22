@@ -39,7 +39,7 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
         </header>
 
         <aside className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
-          <BatchOptions batches={trek.batches} instagramHandle={organizer.instagram_handle} />
+          <BatchOptions batches={trek.batches} trekPath={`/o/${organizer.slug}/${trek.slug}`} />
         </aside>
 
         <div className="min-w-0 space-y-10 lg:col-start-1">

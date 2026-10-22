@@ -1,12 +1,14 @@
+import Link from "next/link";
+
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import type { PublicTrek } from "@/features/treks/queries";
 import { formatDateRange, formatRupees } from "@/lib/format";
 
-type Props = { batches: PublicTrek["batches"]; instagramHandle: string | null };
+type Props = { batches: PublicTrek["batches"]; trekPath: string };
 
-// Upcoming batches with price and live seats. Online booking comes next; until
-// then trekkers are pointed to the organizer.
-export function BatchOptions({ batches, instagramHandle }: Props) {
+// Upcoming batches with price, live seats and a Book button for each open one.
+export function BatchOptions({ batches, trekPath }: Props) {
   return (
     <section className="space-y-4 rounded-xl border p-5">
       <h2 className="font-heading text-xl font-semibold">Upcoming batches</h2>
@@ -19,47 +21,34 @@ export function BatchOptions({ batches, instagramHandle }: Props) {
             const seats = batch.seats_left ?? 0;
             const bookable = batch.status === "open" && seats > 0;
             return (
-              <li key={batch.id} className="space-y-1 py-3 first:pt-0 last:pb-0">
-                <div className="flex items-start justify-between gap-2">
+              <li key={batch.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                <div className="space-y-1">
                   <p className="font-medium">{formatDateRange(batch.start_date, batch.end_date)}</p>
-                  {!bookable && <Badge variant="secondary">{batch.status === "closed" ? "Closed" : "Full"}</Badge>}
-                </div>
-                <p className="text-sm">
-                  <span className="font-medium">{formatRupees(batch.price_paise)}</span>
-                  <span className="text-muted-foreground"> per person</span>
-                </p>
-                {bookable && (
-                  <p className="text-sm text-muted-foreground">
-                    {batch.deposit_paise && `${formatRupees(batch.deposit_paise)} to book · `}
-                    <span className={seats <= 5 ? "font-medium text-destructive" : undefined}>
-                      {seats <= 5 ? `Only ${seats} ${seats === 1 ? "seat" : "seats"} left` : `${seats} seats left`}
-                    </span>
+                  <p className="text-sm">
+                    <span className="font-medium">{formatRupees(batch.price_paise)}</span>
+                    <span className="text-muted-foreground"> per person</span>
                   </p>
+                  {bookable && (
+                    <p className="text-sm text-muted-foreground">
+                      {batch.deposit_paise && `${formatRupees(batch.deposit_paise)} to book · `}
+                      <span className={seats <= 5 ? "font-medium text-destructive" : undefined}>
+                        {seats <= 5 ? `Only ${seats} ${seats === 1 ? "seat" : "seats"} left` : `${seats} seats left`}
+                      </span>
+                    </p>
+                  )}
+                </div>
+                {bookable ? (
+                  <Link href={`${trekPath}/book/${batch.id}`} className={buttonVariants()}>
+                    Book
+                  </Link>
+                ) : (
+                  <Badge variant="secondary">{batch.status === "closed" ? "Closed" : "Full"}</Badge>
                 )}
               </li>
             );
           })}
         </ul>
       )}
-
-      <p className="border-t pt-4 text-sm text-muted-foreground">
-        Online booking is coming soon.
-        {instagramHandle && (
-          <>
-            {" "}
-            To book now, message{" "}
-            <a
-              href={`https://ig.me/m/${instagramHandle}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-foreground underline underline-offset-4"
-            >
-              @{instagramHandle}
-            </a>{" "}
-            on Instagram.
-          </>
-        )}
-      </p>
     </section>
   );
 }

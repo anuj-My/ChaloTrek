@@ -497,12 +497,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_booking: {
+      book_batch: {
         Args: {
           p_batch_id: string
           p_contact_email: string
           p_contact_phone: string
-          p_num_people: number
+          p_participants: Json
           p_source?: Database["public"]["Enums"]["booking_source"]
         }
         Returns: {
@@ -534,6 +534,7 @@ export type Database = {
       owns_booking: { Args: { bk_id: string }; Returns: boolean }
       owns_organizer: { Args: { org_id: string }; Returns: boolean }
       owns_trek: { Args: { t_id: string }; Returns: boolean }
+      owns_trek_photo_path: { Args: { path: string }; Returns: boolean }
       seats_left: {
         Args: { "": Database["public"]["Tables"]["batches"]["Row"] }
         Returns: {
