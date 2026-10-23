@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 
+import { JsonLd } from "@/components/shared/JsonLd";
 import { RatingSummary, ReviewList } from "@/components/shared/Reviews";
 import { TrekCard } from "@/components/shared/TrekCard";
 import { getOrganizerReviews } from "@/features/reviews/queries";
 import { getPublicOrganizerTreks } from "@/features/treks/queries";
+import { siteConfig } from "@/lib/site-config";
 
 // The organizer's public page, the one link for their Instagram bio: who they
 // are and every live trek with its next batch.
@@ -14,6 +16,24 @@ export async function OrganizerPage({ params }: { params: Promise<{ organizer: s
 
   return (
     <div className="mx-auto max-w-6xl space-y-10 px-4 py-10">
+      <JsonLd
+        data={{
+          "@type": "TravelAgency",
+          name: organizer.name,
+          url: `${siteConfig.url}/o/${organizer.slug}`,
+          ...(organizer.bio && { description: organizer.bio }),
+          ...(organizer.instagram_handle && { sameAs: [`https://instagram.com/${organizer.instagram_handle}`] }),
+          ...(reviews.average !== null && {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: Number(reviews.average.toFixed(1)),
+              reviewCount: reviews.count,
+              bestRating: 5,
+              worstRating: 1,
+            },
+          }),
+        }}
+      />
       <header className="max-w-2xl space-y-3">
         <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">{organizer.name}</h1>
         <RatingSummary average={reviews.average} count={reviews.count} />

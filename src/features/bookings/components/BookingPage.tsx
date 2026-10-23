@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { JsonLd } from "@/components/shared/JsonLd";
 import { RatingSummary, ReviewList } from "@/components/shared/Reviews";
 import { getTrekReviews } from "@/features/reviews/queries";
-import { getPublicTrek } from "@/features/treks/queries";
+import { getPublicTrek, type PublicTrek } from "@/features/treks/queries";
+import { siteConfig } from "@/lib/site-config";
 
 import { BatchOptions } from "./BatchOptions";
 import { TrekGallery } from "./TrekGallery";
@@ -27,6 +29,7 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
+      <JsonLd data={trekJsonLd(trek, reviews)} />
       <TrekGallery name={trek.name} photos={trek.photos} />
 
       {/* Phones: header, batches, details. Desktop: batches in a sticky right column. */}
@@ -117,6 +120,49 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
       </div>
     </div>
   );
+}
+
+// The trek as a schema.org Product, so search results can show its price
+// range and rating.
+function trekJsonLd(trek: PublicTrek, reviews: Awaited<ReturnType<typeof getTrekReviews>>) {
+  const url = `${siteConfig.url}/o/${trek.organizers.slug}/${trek.slug}`;
+  const open = trek.batches.filter((b) => b.status === "open" && (b.seats_left ?? 0) > 0);
+  const prices = trek.batches.map((b) => b.price_paise / 100);
+  return {
+    "@type": "Product",
+    name: trek.name,
+    url,
+    image: trek.photos,
+    description: trek.summary ?? `${trek.duration_days}-day trek in ${trek.region} by ${trek.organizers.name}.`,
+    brand: { "@type": "Organization", name: trek.organizers.name, url: `${siteConfig.url}/o/${trek.organizers.slug}` },
+    ...(prices.length > 0 && {
+      offers: {
+        "@type": "AggregateOffer",
+        priceCurrency: "INR",
+        lowPrice: Math.min(...prices),
+        highPrice: Math.max(...prices),
+        offerCount: trek.batches.length,
+        availability: open.length > 0 ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
+        url,
+      },
+    }),
+    ...(reviews.average !== null && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: Number(reviews.average.toFixed(1)),
+        reviewCount: reviews.count,
+        bestRating: 5,
+        worstRating: 1,
+      },
+      review: reviews.reviews.slice(0, 5).map((r) => ({
+        "@type": "Review",
+        author: { "@type": "Person", name: r.author_name },
+        datePublished: r.created_at.slice(0, 10),
+        reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5 },
+        ...(r.body && { reviewBody: r.body }),
+      })),
+    }),
+  };
 }
 
 function ItemList({ title, items }: { title: string; items: string[] }) {
