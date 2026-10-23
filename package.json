@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "db:types": "node --env-file-if-exists=.env.local node_modules/supabase/dist/supabase.js gen types typescript --project-id lwgnwcbuirunwzdqbmed --schema public > src/lib/supabase/database.types.ts",
-    "dev:login": "node --env-file-if-exists=.env.local scripts/dev-login.mjs"
+    "dev:login": "node --env-file-if-exists=.env.local scripts/dev-login.mjs",
+    "db:seed-dummy": "node --env-file=.env.local scripts/seed-dummy.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
