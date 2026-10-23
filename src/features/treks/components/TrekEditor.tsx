@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { TrekBatches } from "@/features/batches/components/TrekBatches";
+import { listDestinations } from "@/features/destinations/queries";
 
 import { getMyTrek, listCancellationPolicies } from "../queries";
 import { TrekForm } from "./TrekForm";
@@ -9,7 +10,11 @@ import { TrekStatusPanel } from "./TrekStatus";
 
 export async function TrekEditor({ params }: { params: Promise<{ trekId: string }> }) {
   const { trekId } = await params;
-  const [{ organizer, trek }, policies] = await Promise.all([getMyTrek(trekId), listCancellationPolicies()]);
+  const [{ organizer, trek }, policies, destinations] = await Promise.all([
+    getMyTrek(trekId),
+    listCancellationPolicies(),
+    listDestinations(),
+  ]);
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -33,7 +38,7 @@ export async function TrekEditor({ params }: { params: Promise<{ trekId: string 
 
       <section className="space-y-4">
         <h2 className="font-heading text-lg font-semibold">Trek details</h2>
-        <TrekForm trek={trek} organizerSlug={organizer.slug} policies={policies} />
+        <TrekForm trek={trek} organizerSlug={organizer.slug} policies={policies} destinations={destinations} />
       </section>
     </div>
   );

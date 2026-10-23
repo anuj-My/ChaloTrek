@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
+import type { Destination } from "@/features/destinations/queries";
 import { slugify } from "@/features/organizers/schema";
 import { useFormAction } from "@/lib/use-form-action";
 
@@ -16,11 +17,11 @@ import type { CancellationPolicy, MyTrek } from "../queries";
 import { DIFFICULTIES, REGIONS } from "../schema";
 import { ItineraryEditor } from "./ItineraryEditor";
 
-type Props = { trek?: MyTrek; organizerSlug: string; policies: CancellationPolicy[] };
+type Props = { trek?: MyTrek; organizerSlug: string; policies: CancellationPolicy[]; destinations: Destination[] };
 
 // Creates a trek when `trek` is missing, otherwise edits it. The link slug can
 // change only while the trek is a draft, since published links get shared.
-export function TrekForm({ trek, organizerSlug, policies }: Props) {
+export function TrekForm({ trek, organizerSlug, policies, destinations }: Props) {
   const isNew = !trek;
   const [state, onSubmit, pending] = useFormAction(isNew ? createTrek : updateTrek);
   const [name, setName] = useState(trek?.name ?? "");
@@ -67,6 +68,26 @@ export function TrekForm({ trek, organizerSlug, policies }: Props) {
             aria-invalid={!!errors.slug}
           />
         )}
+      </FormField>
+
+      <FormField
+        label="Which trek is this?"
+        htmlFor="destination_id"
+        error={errors.destination_id}
+        hint="Lists your trek on its comparison page, e.g. chalotrek.in/treks/kedarkantha. Not listed? Leave it blank."
+      >
+        <NativeSelect id="destination_id" name="destination_id" className="w-full" defaultValue={trek?.destination_id ?? ""}>
+          <NativeSelectOption value="">Not listed</NativeSelectOption>
+          {byRegion(destinations).map(([region, list]) => (
+            <optgroup key={region} label={region}>
+              {list.map((d) => (
+                <NativeSelectOption key={d.id} value={d.id}>
+                  {d.name}
+                </NativeSelectOption>
+              ))}
+            </optgroup>
+          ))}
+        </NativeSelect>
       </FormField>
 
       <div className="grid gap-6 sm:grid-cols-2">
@@ -138,4 +159,12 @@ export function TrekForm({ trek, organizerSlug, policies }: Props) {
       </Button>
     </form>
   );
+}
+
+// [region, destinations] pairs, keeping the order they came in (sorted by
+// region). Object.groupBy would do, but older phones don't have it.
+function byRegion(destinations: Destination[]) {
+  const groups = new Map<string, Destination[]>();
+  for (const d of destinations) groups.set(d.region, [...(groups.get(d.region) ?? []), d]);
+  return [...groups];
 }

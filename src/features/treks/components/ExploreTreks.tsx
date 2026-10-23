@@ -5,6 +5,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { todayInIndia } from "@/lib/format";
 
+import { listLiveDestinations } from "@/features/destinations/queries";
+
 import { listPublicTreks, type PublicTrekListing } from "../queries";
 import { REGIONS } from "../schema";
 
@@ -63,7 +65,8 @@ export async function ExploreTreks({ searchParams }: { searchParams: SearchParam
   };
   const filtered = Object.values(filters).some(Boolean);
 
-  const treks = (await listPublicTreks()).filter((trek) => matches(trek, filters));
+  const [allTreks, destinations] = await Promise.all([listPublicTreks(), listLiveDestinations()]);
+  const treks = allTreks.filter((trek) => matches(trek, filters));
   const months = upcomingMonths(todayInIndia());
 
   return (
@@ -74,6 +77,25 @@ export async function ExploreTreks({ searchParams }: { searchParams: SearchParam
           Compare treks from verified organizers, with real dates, prices and seats left.
         </p>
       </div>
+
+      {destinations.length > 0 && (
+        <nav aria-label="Compare a trek" className="space-y-2">
+          <p className="text-sm font-medium">Compare organizers for a trek</p>
+          <ul className="flex flex-wrap gap-2">
+            {destinations.map((d) => (
+              <li key={d.slug}>
+                <Link
+                  href={`/treks/${d.slug}`}
+                  className="inline-block rounded-full border px-3 py-1 text-sm hover:bg-muted"
+                >
+                  {d.name}
+                  <span className="text-muted-foreground"> · {d.organizers}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
 
       <form method="get" className="grid gap-3 rounded-xl border p-4 sm:grid-cols-3 lg:grid-cols-6">
         <Filter name="region" label="Region" value={filters.region} options={REGIONS.map((r) => [r, r])} />

@@ -10,6 +10,7 @@ const nav = [
   { href: "/admin/organizers", label: "Organizers" },
   { href: "/admin/bookings", label: "Bookings" },
   { href: "/admin/reviews", label: "Reviews" },
+  { href: "/admin/destinations", label: "Destinations" },
   { href: "/admin/refunds", label: "Refunds" },
 ];
 

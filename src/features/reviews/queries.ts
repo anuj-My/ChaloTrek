@@ -51,6 +51,26 @@ export async function getOrganizerReviews(organizerSlug: string) {
 
 export type ReviewSummary = Awaited<ReturnType<typeof getTrekReviews>>;
 
+// Average rating and count per trek, for lists that compare treks.
+export async function getTrekRatings(trekIds: string[]) {
+  const ratings = new Map<string, { average: number; count: number }>();
+  if (trekIds.length === 0) return ratings;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("trek_id, rating")
+    .in("trek_id", trekIds)
+    .eq("hidden", false);
+  if (error) throw error;
+  for (const { trek_id, rating } of data) {
+    const r = ratings.get(trek_id) ?? { average: 0, count: 0 };
+    r.average = (r.average * r.count + rating) / (r.count + 1);
+    r.count += 1;
+    ratings.set(trek_id, r);
+  }
+  return ratings;
+}
+
 // Admin: every review, newest first, hidden ones included.
 export async function listAllReviews() {
   await requireAdmin();

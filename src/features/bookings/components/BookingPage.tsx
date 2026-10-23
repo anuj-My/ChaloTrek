@@ -48,6 +48,13 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
             ))}
           </ul>
           <RatingSummary average={reviews.average} count={reviews.count} />
+          {trek.destinations && (
+            <p className="text-sm">
+              <Link href={`/treks/${trek.destinations.slug}`} className="underline underline-offset-4">
+                Compare all {trek.destinations.name} organizers →
+              </Link>
+            </p>
+          )}
           {trek.summary && <p className="text-lg whitespace-pre-line">{trek.summary}</p>}
         </header>
 

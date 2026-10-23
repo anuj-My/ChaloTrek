@@ -291,6 +291,36 @@ export type Database = {
           },
         ]
       }
+      destinations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          region: string
+          slug: string
+          summary: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          region: string
+          slug: string
+          summary?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          region?: string
+          slug?: string
+          summary?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       organizer_kyc: {
         Row: {
           created_at: string
@@ -619,6 +649,7 @@ export type Database = {
         Row: {
           cancellation_policy_id: number
           created_at: string
+          destination_id: string | null
           difficulty: Database["public"]["Enums"]["trek_difficulty"]
           duration_days: number
           exclusions: string[]
@@ -638,6 +669,7 @@ export type Database = {
         Insert: {
           cancellation_policy_id: number
           created_at?: string
+          destination_id?: string | null
           difficulty: Database["public"]["Enums"]["trek_difficulty"]
           duration_days: number
           exclusions?: string[]
@@ -657,6 +689,7 @@ export type Database = {
         Update: {
           cancellation_policy_id?: number
           created_at?: string
+          destination_id?: string | null
           difficulty?: Database["public"]["Enums"]["trek_difficulty"]
           duration_days?: number
           exclusions?: string[]
@@ -679,6 +712,13 @@ export type Database = {
             columns: ["cancellation_policy_id"]
             isOneToOne: false
             referencedRelation: "cancellation_policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treks_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "destinations"
             referencedColumns: ["id"]
           },
           {

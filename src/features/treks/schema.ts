@@ -59,6 +59,8 @@ export const trekSchema = z.object({
   name: z.string().trim().min(3, "Enter the trek name").max(80),
   slug: slugSchema,
   region: z.enum(REGIONS, "Pick a region"),
+  // Groups the trek with other organizers' on /treks/<destination>.
+  destination_id: z.union([z.literal("").transform(() => null), z.uuid()]),
   difficulty: z.enum(["easy", "moderate", "difficult", "challenging"], "Pick a difficulty"),
   duration_days: z.coerce.number().int("Whole days only").min(1, "At least 1 day").max(60),
   max_altitude_m: optionalInt,

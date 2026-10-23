@@ -68,6 +68,7 @@ export const getPublicTrek = cache(async (organizerSlug: string, trekSlug: strin
        itinerary, inclusions, exclusions, photos,
        organizers!inner(name, slug, bio, instagram_handle),
        cancellation_policies(name, description),
+       destinations(name, slug),
        batches(id, start_date, end_date, price_paise, deposit_paise, total_seats, status, seats_left)`,
     )
     .eq("slug", trekSlug)
@@ -165,12 +166,13 @@ export async function listUpcomingPublicTreks(limit: number) {
 
 // ─── Marketplace ────────────────────────────────────────────────────────────
 
-// Every live trek from approved organizers, for the explore page. Keeps each
-// trek's bookable batches (dates and prices) so the page can filter by month
-// and price. Treks with nothing to book come last.
-export async function listPublicTreks() {
+// Every live trek from approved organizers, for the explore page, or only
+// those at one destination for its comparison page. Keeps each trek's
+// bookable batches (dates and prices) so pages can filter and compare them.
+// Treks with nothing to book come last.
+export async function listPublicTreks(destinationId?: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("treks")
     .select(`${TREK_CARD_FIELDS}, organizers!inner(name, slug)`)
     .eq("status", "published")
@@ -178,6 +180,8 @@ export async function listPublicTreks() {
     .gt("batches.start_date", todayInIndia())
     .neq("batches.status", "cancelled")
     .order("start_date", { referencedTable: "batches" });
+  if (destinationId) query = query.eq("destination_id", destinationId);
+  const { data, error } = await query;
   if (error) throw error;
   return data
     .map((trek) => ({
@@ -194,7 +198,7 @@ export async function listSitemapEntries() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("organizers")
-    .select("slug, updated_at, treks(slug, updated_at)")
+    .select("slug, updated_at, treks(slug, updated_at, destinations(slug))")
     .eq("kyc_status", "approved")
     .eq("treks.status", "published");
   if (error) throw error;
