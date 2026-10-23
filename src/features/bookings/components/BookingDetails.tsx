@@ -2,13 +2,14 @@ import Link from "next/link";
 
 import { ActionButton } from "@/components/shared/ActionButton";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { formatDateRange, formatRupees } from "@/lib/format";
+import { formatDateRange, formatRupees, todayInIndia } from "@/lib/format";
 
 import { cancelBooking } from "../actions";
 import { getMyBooking, type MyBooking } from "../queries";
 import { amountDueNowPaise, type BookingDisplayStatus, bookingReference } from "../status";
 import { BookingStatusBadge } from "./BookingStatusBadge";
 import { HoldTimer } from "./HoldTimer";
+import { ReviewForm } from "./ReviewForm";
 
 // A trekker's booking: what they booked, who's going, and paying for it.
 export async function BookingDetails({ params }: { params: Promise<{ bookingId: string }> }) {
@@ -35,6 +36,27 @@ export async function BookingDetails({ params }: { params: Promise<{ bookingId: 
       </div>
 
       <PaymentPanel booking={booking} status={status} />
+
+      {status === "confirmed" && batch.end_date < todayInIndia() && (
+        <section className="space-y-4 rounded-xl border p-5">
+          <div className="space-y-1">
+            <h2 className="font-heading text-lg font-semibold">
+              {booking.reviews ? "Your review" : "How was the trek?"}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {booking.reviews?.hidden
+                ? "Your review was hidden by Chalo Trek for breaking our guidelines. Edit it and contact us if you think this is a mistake."
+                : `Your review is shown on ${trek.name} and ${trek.organizers.name}'s page, marked as verified, and helps other trekkers choose.`}
+            </p>
+          </div>
+          <ReviewForm
+            bookingId={booking.id}
+            organizerName={trek.organizers.name}
+            defaultName={booking.participants[0]?.full_name.split(" ")[0] ?? ""}
+            review={booking.reviews}
+          />
+        </section>
+      )}
 
       <section className="space-y-3">
         <h2 className="font-heading text-lg font-semibold">

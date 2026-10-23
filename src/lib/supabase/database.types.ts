@@ -455,6 +455,70 @@ export type Database = {
           },
         ]
       }
+      reviews: {
+        Row: {
+          author_name: string
+          body: string | null
+          booking_id: string
+          created_at: string
+          hidden: boolean
+          id: string
+          organizer_id: string
+          rating: number
+          trek_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          body?: string | null
+          booking_id: string
+          created_at?: string
+          hidden?: boolean
+          id?: string
+          organizer_id: string
+          rating: number
+          trek_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          body?: string | null
+          booking_id?: string
+          created_at?: string
+          hidden?: boolean
+          id?: string
+          organizer_id?: string
+          rating?: number
+          trek_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "organizers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_trek_id_fkey"
+            columns: ["trek_id"]
+            isOneToOne: false
+            referencedRelation: "treks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       treks: {
         Row: {
           cancellation_policy_id: number
@@ -680,6 +744,33 @@ export type Database = {
       }
       seats_taken: { Args: { b_id: string }; Returns: number }
       trek_is_public: { Args: { t_id: string }; Returns: boolean }
+      submit_review: {
+        Args: {
+          p_author_name: string
+          p_body: string
+          p_booking_id: string
+          p_rating: number
+        }
+        Returns: {
+          author_name: string
+          body: string | null
+          booking_id: string
+          created_at: string
+          hidden: boolean
+          id: string
+          organizer_id: string
+          rating: number
+          trek_id: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reviews"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       batch_status: "open" | "closed" | "cancelled"

@@ -9,6 +9,7 @@ const nav = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/organizers", label: "Organizers" },
   { href: "/admin/bookings", label: "Bookings" },
+  { href: "/admin/reviews", label: "Reviews" },
   { href: "/admin/refunds", label: "Refunds" },
 ];
 

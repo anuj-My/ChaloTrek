@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { formatDateRange, formatRupees } from "@/lib/format";
+import { formatDateRange, formatRupees, todayInIndia } from "@/lib/format";
 
 import { listMyBookings } from "../queries";
 import { bookingReference } from "../status";
@@ -8,6 +8,7 @@ import { BookingStatusBadge } from "./BookingStatusBadge";
 
 export async function MyBookings() {
   const bookings = await listMyBookings();
+  const today = todayInIndia();
 
   return (
     <div className="space-y-6">
@@ -24,6 +25,7 @@ export async function MyBookings() {
         <ul className="divide-y rounded-lg border">
           {bookings.map((booking) => {
             const batch = booking.batches;
+            const canReview = booking.displayStatus === "confirmed" && batch.end_date < today && !booking.reviews;
             return (
               <li key={booking.id}>
                 <Link
@@ -38,6 +40,7 @@ export async function MyBookings() {
                     <p className="text-sm text-muted-foreground">
                       {formatDateRange(batch.start_date, batch.end_date)} · by {batch.treks.organizers.name}
                     </p>
+                    {canReview && <p className="text-sm font-medium text-foreground">How was it? Leave a review →</p>}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {bookingReference(booking.booking_number)} · {booking.num_people}{" "}

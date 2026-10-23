@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { RatingSummary, ReviewList } from "@/components/shared/Reviews";
+import { getTrekReviews } from "@/features/reviews/queries";
 import { getPublicTrek } from "@/features/treks/queries";
 
 import { BatchOptions } from "./BatchOptions";
@@ -12,6 +14,7 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
   const trek = await getPublicTrek(organizerSlug, trekSlug);
   if (!trek) notFound();
   const organizer = trek.organizers;
+  const reviews = await getTrekReviews(trek.id);
 
   const facts = [
     trek.region,
@@ -41,6 +44,7 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
               <li key={i}>{fact}</li>
             ))}
           </ul>
+          <RatingSummary average={reviews.average} count={reviews.count} />
           {trek.summary && <p className="text-lg whitespace-pre-line">{trek.summary}</p>}
         </header>
 
@@ -82,6 +86,16 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
                 <span className="font-medium">{trek.cancellation_policies.name}:</span>{" "}
                 {trek.cancellation_policies.description}
               </p>
+            </section>
+          )}
+
+          {reviews.count > 0 && (
+            <section className="space-y-4">
+              <div className="space-y-1">
+                <h2 className="font-heading text-xl font-semibold">Reviews</h2>
+                <p className="text-sm text-muted-foreground">Only trekkers who booked and went on this trek can review it.</p>
+              </div>
+              <ReviewList reviews={reviews.reviews} />
             </section>
           )}
 

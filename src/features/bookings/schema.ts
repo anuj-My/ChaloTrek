@@ -89,3 +89,10 @@ export const waitlistSchema = z.object({
 export const batchIdSchema = z.object({ batch_id: z.uuid() });
 
 export const waitlistEntryIdSchema = z.object({ entry_id: z.uuid() });
+
+export const reviewSchema = z.object({
+  booking_id: z.uuid(),
+  rating: z.coerce.number<string>("Pick a rating").int().min(1, "Pick a rating").max(5),
+  body: z.string().trim().max(2000, "At most 2,000 characters"),
+  author_name: z.string().trim().min(2, "Enter the name to show").max(50, "At most 50 characters"),
+});

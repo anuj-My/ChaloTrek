@@ -17,6 +17,7 @@ import {
   bookingSchema,
   groupLinkSchema,
   offlinePaymentSchema,
+  reviewSchema,
   waitlistEntryIdSchema,
   waitlistSchema,
 } from "./schema";
@@ -222,6 +223,34 @@ export async function saveGroupLink(_prev: FormState, formData: FormData): Promi
   if (error) {
     console.error("saveGroupLink failed:", error);
     return { error: "Couldn't save the link. Please try again." };
+  }
+
+  refresh();
+  return { ok: true };
+}
+
+// Messages raised by submit_review() that are safe to show as-is.
+const REVIEW_ERRORS = ["Only confirmed bookings can be reviewed", "You can review once the trek has ended"];
+
+// Trekker reviews a trek they went on, or edits their review. The database
+// checks the booking is theirs, confirmed, and that the trek has ended.
+export async function submitReview(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = reviewSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fieldErrors(parsed.error);
+  const { booking_id, rating, body, author_name } = parsed.data;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("submit_review", {
+    p_booking_id: booking_id,
+    p_rating: rating,
+    p_body: body,
+    p_author_name: author_name,
+  });
+  if (error) {
+    const known = REVIEW_ERRORS.find((message) => error.message.includes(message));
+    if (known) return { error: `${known}.` };
+    console.error("submitReview failed:", error);
+    return { error: "Couldn't save your review. Please try again." };
   }
 
   refresh();

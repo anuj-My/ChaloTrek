@@ -1,19 +1,22 @@
 import { notFound } from "next/navigation";
 
+import { RatingSummary, ReviewList } from "@/components/shared/Reviews";
 import { TrekCard } from "@/components/shared/TrekCard";
+import { getOrganizerReviews } from "@/features/reviews/queries";
 import { getPublicOrganizerTreks } from "@/features/treks/queries";
 
 // The organizer's public page, the one link for their Instagram bio: who they
 // are and every live trek with its next batch.
 export async function OrganizerPage({ params }: { params: Promise<{ organizer: string }> }) {
   const { organizer: slug } = await params;
-  const organizer = await getPublicOrganizerTreks(slug);
+  const [organizer, reviews] = await Promise.all([getPublicOrganizerTreks(slug), getOrganizerReviews(slug)]);
   if (!organizer) notFound();
 
   return (
     <div className="mx-auto max-w-6xl space-y-10 px-4 py-10">
       <header className="max-w-2xl space-y-3">
         <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">{organizer.name}</h1>
+        <RatingSummary average={reviews.average} count={reviews.count} />
         {organizer.bio && <p className="text-lg whitespace-pre-line text-muted-foreground">{organizer.bio}</p>}
         {organizer.instagram_handle && (
           <a
@@ -44,6 +47,16 @@ export async function OrganizerPage({ params }: { params: Promise<{ organizer: s
           </ul>
         )}
       </section>
+
+      {reviews.count > 0 && (
+        <section className="max-w-3xl space-y-4">
+          <div className="space-y-1">
+            <h2 className="font-heading text-xl font-semibold">Reviews</h2>
+            <p className="text-sm text-muted-foreground">From trekkers who booked and went with {organizer.name}.</p>
+          </div>
+          <ReviewList reviews={reviews.reviews} />
+        </section>
+      )}
     </div>
   );
 }

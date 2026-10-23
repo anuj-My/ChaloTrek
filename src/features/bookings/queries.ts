@@ -49,7 +49,10 @@ export async function getMyBooking(bookingId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("bookings")
-    .select(`${BOOKING_WITH_TREK}, participants(full_name, age, gender, created_at)`)
+    .select(
+      `${BOOKING_WITH_TREK}, participants(full_name, age, gender, created_at),
+       reviews(rating, body, author_name, hidden)`,
+    )
     .eq("id", bookingId)
     .eq("user_id", user.id)
     .order("created_at", { referencedTable: "participants" })
@@ -67,7 +70,7 @@ export async function listMyBookings() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("bookings")
-    .select(BOOKING_WITH_TREK)
+    .select(`${BOOKING_WITH_TREK}, reviews(id)`)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
   if (error) throw error;
