@@ -162,3 +162,41 @@ export async function listUpcomingPublicTreks(limit: number) {
     .sort(bySoonestBatch)
     .slice(0, limit);
 }
+
+// ─── Marketplace ────────────────────────────────────────────────────────────
+
+// Every live trek from approved organizers, for the explore page. Keeps each
+// trek's bookable batches (dates and prices) so the page can filter by month
+// and price. Treks with nothing to book come last.
+export async function listPublicTreks() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("treks")
+    .select(`${TREK_CARD_FIELDS}, organizers!inner(name, slug)`)
+    .eq("status", "published")
+    .eq("organizers.kyc_status", "approved")
+    .gt("batches.start_date", todayInIndia())
+    .neq("batches.status", "cancelled")
+    .order("start_date", { referencedTable: "batches" });
+  if (error) throw error;
+  return data
+    .map((trek) => ({
+      ...toTrekCard(trek),
+      bookable: trek.batches.filter((b) => b.status === "open" && (b.seats_left ?? 0) > 0),
+    }))
+    .sort(bySoonestBatch);
+}
+
+export type PublicTrekListing = Awaited<ReturnType<typeof listPublicTreks>>[number];
+
+// Pages for the sitemap: approved organizers and their published treks.
+export async function listSitemapEntries() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("organizers")
+    .select("slug, updated_at, treks(slug, updated_at)")
+    .eq("kyc_status", "approved")
+    .eq("treks.status", "published");
+  if (error) throw error;
+  return data;
+}

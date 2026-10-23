@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { TrekCard } from "@/components/shared/TrekCard";
 import { listUpcomingPublicTreks } from "@/features/treks/queries";
 
@@ -8,7 +10,12 @@ export async function UpcomingTreks() {
 
   return (
     <section id="treks" className="mx-auto max-w-6xl scroll-mt-8 space-y-6 px-4 pb-24">
-      <h2 className="font-heading text-2xl font-semibold">Upcoming treks</h2>
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 className="font-heading text-2xl font-semibold">Upcoming treks</h2>
+        <Link href="/treks" className="text-sm underline underline-offset-4">
+          Explore all treks
+        </Link>
+      </div>
       {treks.length === 0 ? (
         <p className="text-muted-foreground">New batches are coming soon. Check back shortly.</p>
       ) : (

@@ -10,7 +10,12 @@ export function SiteNav({ actions }: { actions?: React.ReactNode }) {
         <Link href="/" className="font-heading text-lg font-semibold">
           {siteConfig.name}
         </Link>
-        {actions}
+        <div className="flex items-center gap-4">
+          <Link href="/treks" className="text-sm text-muted-foreground hover:text-foreground">
+            Explore treks
+          </Link>
+          {actions}
+        </div>
       </nav>
     </header>
   );
