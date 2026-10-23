@@ -1,19 +1,29 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 import { getUser } from "@/features/auth/queries";
 import { fieldErrors, type FormState } from "@/lib/form-state";
+import { siteConfig } from "@/lib/site-config";
 import { createClient } from "@/lib/supabase/server";
 
+import { emailBookingCancelled, emailBookingConfirmed, emailNewBooking } from "./emails";
 import { bookingFromFormData, bookingIdSchema, bookingSchema, offlinePaymentSchema } from "./schema";
+
+// The site this request came in on, for links in emails.
+async function requestOrigin() {
+  return (await headers()).get("origin") ?? siteConfig.url;
+}
 
 // Messages raised by book_batch() that are safe and useful to show as-is.
 const BOOKING_ERRORS = ["Not enough seats left", "This batch is not taking bookings", "Batch not found"];
 
 // Holds the seats for 10 minutes and saves the participants, then sends the
-// trekker to the booking page to pay. Payment confirms the booking later.
+// trekker to the booking page to pay, and emails the organizer. Payment
+// confirms the booking later.
 export async function startBooking(_prev: FormState, formData: FormData): Promise<FormState> {
   const user = await getUser();
   if (!user) return { error: "Your session ended. Please log in again." };
@@ -39,6 +49,8 @@ export async function startBooking(_prev: FormState, formData: FormData): Promis
     return { error: "Couldn't start your booking. Please try again." };
   }
 
+  const origin = await requestOrigin();
+  after(() => emailNewBooking(data.id, origin));
   redirect(`/my-bookings/${data.id}`);
 }
 
@@ -51,12 +63,18 @@ const PAYMENT_ERRORS = [
 ];
 
 // Organizer marks a booking as paid (or updates what's been received). The
-// database checks they run the trek and that seats are still free.
+// database checks they run the trek and that seats are still free. The
+// trekker is emailed when this confirms the booking, not on later updates.
 export async function recordOfflinePayment(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = offlinePaymentSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fieldErrors(parsed.error);
 
   const supabase = await createClient();
+  const { data: before } = await supabase
+    .from("bookings")
+    .select("status")
+    .eq("id", parsed.data.booking_id)
+    .maybeSingle();
   const { error } = await supabase.rpc("record_offline_payment", {
     p_booking_id: parsed.data.booking_id,
     p_paid_paise: parsed.data.amount,
@@ -72,6 +90,10 @@ export async function recordOfflinePayment(_prev: FormState, formData: FormData)
     return { error: "Couldn't save the payment. Please try again." };
   }
 
+  if (before?.status !== "confirmed") {
+    const origin = await requestOrigin();
+    after(() => emailBookingConfirmed(parsed.data.booking_id, origin));
+  }
   refresh();
   return { ok: true };
 }
@@ -84,13 +106,14 @@ const CANCEL_ERRORS = [
 ];
 
 // The organizer, or the trekker for an unpaid booking, cancels it. The
-// database decides who may, and the seats go back on sale.
+// database decides who may, and the seats go back on sale. The trekker is
+// emailed when the organizer cancels.
 export async function cancelBooking(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = bookingIdSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: "Something went wrong. Please refresh and try again." };
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("cancel_booking", { p_booking_id: parsed.data.booking_id });
+  const { data, error } = await supabase.rpc("cancel_booking", { p_booking_id: parsed.data.booking_id });
   if (error) {
     const known = CANCEL_ERRORS.find((message) => error.message.includes(message));
     if (known) return { error: `${known}.` };
@@ -98,6 +121,10 @@ export async function cancelBooking(_prev: FormState, formData: FormData): Promi
     return { error: "Couldn't cancel the booking. Please try again." };
   }
 
+  if (data.cancelled_by === "organizer") {
+    const origin = await requestOrigin();
+    after(() => emailBookingCancelled(data.id, origin));
+  }
   refresh();
   return { ok: true };
 }
