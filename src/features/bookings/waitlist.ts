@@ -40,22 +40,21 @@ export async function notifyWaitlist(batchId: string, origin: string) {
     const bookUrl = `${origin}/o/${trek.organizers.slug}/${trek.slug}/book/${batch.id}`;
     const seats = `${seatsLeft} ${seatsLeft === 1 ? "seat" : "seats"}`;
 
-    await Promise.all(
-      entries.map((entry) =>
-        sendEmail({
-          to: entry.email,
-          subject: `Seats open on ${trek.name}, ${dates}`,
-          content: {
-            heading: `${seats} opened up on ${trek.name}`,
-            paragraphs: [
-              `You're on the waitlist for ${trek.organizers.name}'s ${dates} batch, and ${seats} just became free.`,
-              "Everyone on the waitlist whose group fits gets this email, so the seats go to whoever books first.",
-            ],
-            buttons: [{ label: "Book now", url: bookUrl }],
-          },
-        }),
-      ),
-    );
+    // One at a time, to stay inside the email provider's rate limit.
+    for (const entry of entries) {
+      await sendEmail({
+        to: entry.email,
+        subject: `Seats open on ${trek.name}, ${dates}`,
+        content: {
+          heading: `${seats} opened up on ${trek.name}`,
+          paragraphs: [
+            `You're on the waitlist for ${trek.organizers.name}'s ${dates} batch, and ${seats} just became free.`,
+            "Everyone on the waitlist whose group fits gets this email, so the seats go to whoever books first.",
+          ],
+          buttons: [{ label: "Book now", url: bookUrl }],
+        },
+      });
+    }
 
     const { error: updateError } = await admin
       .from("waitlist_entries")

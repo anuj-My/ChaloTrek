@@ -29,19 +29,28 @@ export async function sendEmail({ to, subject, replyTo, content }: Email) {
     return;
   }
 
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
+  const body = JSON.stringify({
+    from: process.env.EMAIL_FROM || `${siteConfig.name} <bookings@chalotrek.in>`,
+    to: [to],
+    subject,
+    html,
+    text,
+    ...(replyTo && { reply_to: replyTo }),
+  });
+  const post = () =>
+    fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: process.env.EMAIL_FROM || `${siteConfig.name} <bookings@chalotrek.in>`,
-        to: [to],
-        subject,
-        html,
-        text,
-        ...(replyTo && { reply_to: replyTo }),
-      }),
+      body,
     });
+
+  try {
+    let response = await post();
+    // Resend allows a few requests a second; batches of emails can hit that.
+    if (response.status === 429) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      response = await post();
+    }
     if (!response.ok) {
       console.error(`sendEmail failed (${response.status}) to ${to}:`, await response.text());
     }

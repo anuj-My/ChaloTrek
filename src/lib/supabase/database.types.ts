@@ -106,6 +106,32 @@ export type Database = {
           },
         ]
       }
+      booking_emails: {
+        Row: {
+          booking_id: string
+          kind: Database["public"]["Enums"]["booking_email_kind"]
+          sent_at: string
+        }
+        Insert: {
+          booking_id: string
+          kind: Database["public"]["Enums"]["booking_email_kind"]
+          sent_at?: string
+        }
+        Update: {
+          booking_id?: string
+          kind?: Database["public"]["Enums"]["booking_email_kind"]
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_emails_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           batch_id: string
@@ -775,6 +801,7 @@ export type Database = {
     Enums: {
       batch_status: "open" | "closed" | "cancelled"
       booking_canceller: "organizer" | "trekker"
+      booking_email_kind: "balance_reminder" | "trek_reminder" | "review_request"
       booking_source: "organizer_link" | "marketplace"
       booking_status:
         | "pending"
@@ -918,6 +945,7 @@ export const Constants = {
     Enums: {
       batch_status: ["open", "closed", "cancelled"],
       booking_canceller: ["organizer", "trekker"],
+      booking_email_kind: ["balance_reminder", "trek_reminder", "review_request"],
       booking_source: ["organizer_link", "marketplace"],
       booking_status: [
         "pending",

@@ -160,3 +160,81 @@ export function emailBookingCancelled(bookingId: string, origin: string) {
     });
   });
 }
+
+// ─── Sent by the daily job (see reminders.ts) ───────────────────────────────
+
+// To the trekker, a few days before the trek, when a balance is still due.
+export function emailBalanceReminder(bookingId: string, origin: string) {
+  return send(bookingId, "balance reminder", async (b) => {
+    const balance = b.total_paise - b.paid_paise;
+    if (balance <= 0) return;
+    const contact = organizerContact(b.organizer);
+    await sendEmail({
+      to: b.contact_email,
+      subject: `Balance of ${formatRupees(balance)} due for ${b.trekName} (${b.reference})`,
+      replyTo: b.organizer.email,
+      content: {
+        heading: `${formatRupees(balance)} balance due before your trek`,
+        paragraphs: [
+          `Your ${b.trekName} trek with ${b.organizer.name} starts soon (${b.dates}). You've paid ${formatRupees(b.paid_paise)} of ${formatRupees(b.total_paise)}.`,
+          `Please pay the balance to ${b.organizer.name} as they direct${contact ? `. Contact them: ${contact}` : ""}.`,
+        ],
+        rows: [
+          ["Booking ID", b.reference],
+          ["Balance due", formatRupees(balance)],
+        ],
+        buttons: [{ label: "View booking", url: `${origin}/my-bookings/${b.id}` }],
+      },
+    });
+  });
+}
+
+// To the trekker, two days before the trek starts.
+export function emailTrekReminder(bookingId: string, origin: string) {
+  return send(bookingId, "trek reminder", async (b) => {
+    const balance = b.total_paise - b.paid_paise;
+    const contact = organizerContact(b.organizer);
+    const groupUrl = b.batch.batch_group_links?.url;
+    await sendEmail({
+      to: b.contact_email,
+      subject: `${b.trekName} starts in 2 days (${b.reference})`,
+      replyTo: b.organizer.email,
+      content: {
+        heading: `${b.trekName} starts in 2 days`,
+        paragraphs: [
+          `Time to pack! Your trek with ${b.organizer.name} runs ${b.dates}.`,
+          ...(groupUrl ? ["Check the batch's WhatsApp group for the pickup point, timings and packing list."] : []),
+          ...(contact ? [`Questions? Contact ${b.organizer.name}: ${contact}.`] : []),
+        ],
+        rows: [
+          ["Booking ID", b.reference],
+          ["Dates", b.dates],
+          ["People", b.names],
+          ...(balance > 0 ? [["Balance to pay the organizer", formatRupees(balance)] as [string, string]] : []),
+        ],
+        buttons: [
+          ...(groupUrl ? [{ label: "Open the WhatsApp group", url: groupUrl }] : []),
+          { label: "View booking", url: `${origin}/my-bookings/${b.id}` },
+        ],
+      },
+    });
+  });
+}
+
+// To the trekker, the day after the trek ends.
+export function emailReviewRequest(bookingId: string, origin: string) {
+  return send(bookingId, "review request", async (b) => {
+    await sendEmail({
+      to: b.contact_email,
+      subject: `How was ${b.trekName}?`,
+      content: {
+        heading: `How was ${b.trekName}?`,
+        paragraphs: [
+          `We hope you had a great trek with ${b.organizer.name}. A quick review helps other trekkers choose, and helps good organizers get noticed.`,
+          "It takes a minute: pick a rating, and add a few words if you like.",
+        ],
+        buttons: [{ label: "Leave a review", url: `${origin}/my-bookings/${b.id}` }],
+      },
+    });
+  });
+}
