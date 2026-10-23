@@ -46,7 +46,7 @@ export async function listOrganizersForReview() {
 }
 
 // True when KYC was submitted (or resubmitted) after the last admin review.
-export function awaitingReview(kyc: OrganizerKyc) {
+export function awaitingReview(kyc: Pick<NonNullable<OrganizerKyc>, "submitted_at" | "reviewed_at"> | null) {
   if (!kyc?.submitted_at) return false;
   return !kyc.reviewed_at || kyc.submitted_at > kyc.reviewed_at;
 }

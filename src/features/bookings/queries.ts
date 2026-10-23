@@ -2,8 +2,8 @@ import "server-only";
 
 import { notFound } from "next/navigation";
 
-import { requireUser } from "@/features/auth/queries";
-import { requireMyOrganizer } from "@/features/organizers/queries";
+import { requireAdmin, requireUser } from "@/features/auth/queries";
+import { awaitingReview, requireMyOrganizer } from "@/features/organizers/queries";
 import { todayInIndia } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
@@ -167,4 +167,68 @@ export async function getMyWaitlistEntry(batchId: string, userId: string) {
     .maybeSingle();
   if (error) throw error;
   return data;
+}
+
+// ─── Admin ──────────────────────────────────────────────────────────────────
+// Admins read every booking through RLS (is_admin()).
+
+// The most recent bookings across the platform.
+export async function listAllBookings(limit = 200) {
+  await requireAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("bookings")
+    .select(
+      `id, booking_number, status, hold_expires_at, num_people, total_paise, paid_paise, paid_offline,
+       contact_email, contact_phone, created_at,
+       batches!inner(start_date, end_date, treks!inner(name, slug, organizers!inner(name, slug)))`,
+    )
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  const now = Date.now();
+  return data.map((booking) => ({ ...booking, displayStatus: bookingDisplayStatus(booking, now) }));
+}
+
+// Headline numbers for the admin overview (docs/plan.md, section 10). Reads
+// every booking, which is fine until there are tens of thousands.
+export async function getPlatformStats() {
+  await requireAdmin();
+  const supabase = await createClient();
+  const today = todayInIndia();
+  const [organizers, bookings, batches] = await Promise.all([
+    supabase.from("organizers").select("kyc_status, organizer_kyc(submitted_at, reviewed_at)"),
+    supabase.from("bookings").select("status, hold_expires_at, num_people, total_paise, paid_paise, created_at"),
+    supabase
+      .from("batches")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "open")
+      .gt("start_date", today),
+  ]);
+  for (const result of [organizers, bookings, batches]) if (result.error) throw result.error;
+
+  // Bookings made this calendar month, India time.
+  const monthStart = `${today.slice(0, 7)}-01T00:00:00+05:30`;
+  const now = Date.now();
+  const confirmed = (bookings.data ?? []).filter((b) => bookingDisplayStatus(b, now) === "confirmed");
+  const thisMonth = confirmed.filter((b) => b.created_at >= new Date(monthStart).toISOString());
+  const sum = (rows: typeof confirmed, key: "total_paise" | "paid_paise" | "num_people") =>
+    rows.reduce((total, b) => total + b[key], 0);
+  const orgs = organizers.data ?? [];
+
+  return {
+    organizers: {
+      total: orgs.length,
+      approved: orgs.filter((o) => o.kyc_status === "approved").length,
+      awaitingReview: orgs.filter((o) => o.kyc_status !== "approved" && awaitingReview(o.organizer_kyc)).length,
+    },
+    openBatches: batches.count ?? 0,
+    month: { bookings: thisMonth.length, people: sum(thisMonth, "num_people"), gmvPaise: sum(thisMonth, "total_paise") },
+    allTime: {
+      bookings: confirmed.length,
+      people: sum(confirmed, "num_people"),
+      gmvPaise: sum(confirmed, "total_paise"),
+      collectedPaise: sum(confirmed, "paid_paise"),
+    },
+  };
 }
