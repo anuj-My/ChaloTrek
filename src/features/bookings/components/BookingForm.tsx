@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { FormAlert } from "@/components/shared/FormAlert";
 import { FormField } from "@/components/shared/FormField";
@@ -11,9 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatRupees } from "@/lib/format";
 import { useFormAction } from "@/lib/use-form-action";
 
-import { startBooking } from "../actions";
+import { checkCoupon, type CouponCheck, startBooking } from "../actions";
 import { GENDERS } from "../schema";
-import { amountDueNowPaise } from "../status";
+import { amountDueNowPaise, couponDiscountPaise } from "../status";
 
 type Props = {
   batch: { id: string; price_paise: number; deposit_paise: number | null };
@@ -27,8 +27,11 @@ export function BookingForm({ batch, maxPeople, defaultEmail }: Props) {
   const [state, onSubmit, pending] = useFormAction(startBooking);
   const [people, setPeople] = useState(1);
   const errors = state.fieldErrors ?? {};
-  const total = batch.price_paise * people;
-  const dueNow = amountDueNowPaise(batch, people);
+  const [coupon, setCoupon] = useState<CouponCheck>({});
+  const subtotal = batch.price_paise * people;
+  const discount = coupon.coupon ? couponDiscountPaise(coupon.coupon, batch.price_paise, people) : 0;
+  const total = subtotal - discount;
+  const dueNow = amountDueNowPaise(batch, people, discount);
 
   return (
     <form onSubmit={onSubmit} className="space-y-8">
@@ -64,8 +67,9 @@ export function BookingForm({ batch, maxPeople, defaultEmail }: Props) {
           <span className="text-muted-foreground">
             {formatRupees(batch.price_paise)} × {people} {people === 1 ? "person" : "people"}
           </span>
-          <span>{formatRupees(total)}</span>
+          <span>{formatRupees(subtotal)}</span>
         </div>
+        <CouponField batchId={batch.id} result={coupon} onChange={setCoupon} discountPaise={discount} />
         {dueNow < total && (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Balance, paid to the organizer later</span>
@@ -96,6 +100,85 @@ export function BookingForm({ batch, maxPeople, defaultEmail }: Props) {
         </p>
       </section>
     </form>
+  );
+}
+
+// "Have a coupon code?" — checks the code with the server and reports the
+// result up, so the price summary can show the discount. The applied code
+// goes in a hidden field; booking checks it again.
+function CouponField({
+  batchId,
+  result,
+  onChange,
+  discountPaise,
+}: {
+  batchId: string;
+  result: CouponCheck;
+  onChange: (result: CouponCheck) => void;
+  discountPaise: number;
+}) {
+  const [code, setCode] = useState("");
+  const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
+  const applied = result.coupon;
+
+  if (applied) {
+    return (
+      <div className="flex justify-between text-sm">
+        <span className="text-muted-foreground">
+          Coupon {applied.code}{" "}
+          <button
+            type="button"
+            className="underline underline-offset-4 hover:text-foreground"
+            onClick={() => {
+              onChange({});
+              setCode("");
+            }}
+          >
+            Remove
+          </button>
+        </span>
+        <span>−{formatRupees(discountPaise)}</span>
+        <input type="hidden" name="coupon_code" value={applied.code} />
+      </div>
+    );
+  }
+
+  if (!open) {
+    return (
+      <button type="button" className="text-sm underline underline-offset-4" onClick={() => setOpen(true)}>
+        Have a coupon code?
+      </button>
+    );
+  }
+
+  const apply = () => startTransition(async () => onChange(await checkCoupon(batchId, code)));
+  return (
+    <div className="space-y-1">
+      <div className="flex gap-2">
+        <Input
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          onKeyDown={(e) => {
+            // Enter applies the code instead of submitting the booking.
+            if (e.key === "Enter") {
+              e.preventDefault();
+              apply();
+            }
+          }}
+          placeholder="Coupon code"
+          aria-label="Coupon code"
+          autoCapitalize="characters"
+          maxLength={20}
+          autoFocus
+          className="w-44"
+        />
+        <Button type="button" variant="outline" onClick={apply} disabled={pending || !code.trim()}>
+          {pending ? "Checking…" : "Apply"}
+        </Button>
+      </div>
+      {result.error && <p className="text-sm text-destructive">{result.error}</p>}
+    </div>
   );
 }
 

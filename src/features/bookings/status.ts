@@ -23,9 +23,28 @@ export const BOOKING_STATUS_LABELS: Record<BookingDisplayStatus, string> = {
   refunded: "Refunded",
 };
 
-// Paid now: the deposit per person when the batch takes one, else the full price.
-export function amountDueNowPaise(batch: { price_paise: number; deposit_paise: number | null }, people: number) {
-  return (batch.deposit_paise ?? batch.price_paise) * people;
+// Paid now: the deposit per person when the batch takes one, else the full
+// price. A coupon discount comes off the balance, so the deposit stays the
+// same unless it's more than the discounted total.
+export function amountDueNowPaise(
+  batch: { price_paise: number; deposit_paise: number | null },
+  people: number,
+  discountPaise = 0,
+) {
+  const total = batch.price_paise * people - discountPaise;
+  return batch.deposit_paise ? Math.min(batch.deposit_paise * people, total) : total;
+}
+
+type Coupon = { percent_off: number | null; amount_off_paise: number | null };
+
+// What a coupon takes off. Matches coupon_discount() in the database: whole
+// rupees, and always leaving at least ₹1 to pay.
+export function couponDiscountPaise(coupon: Coupon, pricePaise: number, people: number) {
+  const subtotal = pricePaise * people;
+  const discount = coupon.percent_off
+    ? Math.floor((subtotal * coupon.percent_off) / 10000) * 100
+    : (coupon.amount_off_paise ?? 0) * people;
+  return Math.min(discount, subtotal - 100);
 }
 
 // "CT-10001"

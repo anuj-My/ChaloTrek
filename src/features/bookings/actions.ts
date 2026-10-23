@@ -15,6 +15,7 @@ import {
   bookingFromFormData,
   bookingIdSchema,
   bookingSchema,
+  couponCheckSchema,
   groupLinkSchema,
   offlinePaymentSchema,
   reviewSchema,
@@ -23,8 +24,44 @@ import {
 } from "./schema";
 import { notifyWaitlist } from "./waitlist";
 
+// Messages raised by find_coupon() (through check_coupon() and book_batch())
+// that are safe to show as-is.
+const COUPON_ERRORS = [
+  "This coupon code isn't valid for this trek",
+  "This coupon has expired",
+  "This coupon has been used up",
+];
+
 // Messages raised by book_batch() that are safe and useful to show as-is.
-const BOOKING_ERRORS = ["Not enough seats left", "This batch is not taking bookings", "Batch not found"];
+const BOOKING_ERRORS = [
+  "Not enough seats left",
+  "This batch is not taking bookings",
+  "Batch not found",
+  ...COUPON_ERRORS,
+];
+
+export type CouponCheck = {
+  error?: string;
+  coupon?: { code: string; percent_off: number | null; amount_off_paise: number | null };
+};
+
+// The booking form checks a code before booking, to show the new price.
+export async function checkCoupon(batchId: string, code: string): Promise<CouponCheck> {
+  const parsed = couponCheckSchema.safeParse({ batch_id: batchId, code });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .rpc("check_coupon", { p_batch_id: parsed.data.batch_id, p_code: parsed.data.code })
+    .single();
+  if (error) {
+    const known = COUPON_ERRORS.find((message) => error.message.includes(message));
+    if (known) return { error: `${known}.` };
+    console.error("checkCoupon failed:", error);
+    return { error: "Couldn't check the code. Please try again." };
+  }
+  return { coupon: data };
+}
 
 // Holds the seats for 10 minutes and saves the participants, then sends the
 // trekker to the booking page to pay, and emails the organizer. Payment
@@ -35,7 +72,7 @@ export async function startBooking(_prev: FormState, formData: FormData): Promis
 
   const parsed = bookingSchema.safeParse(bookingFromFormData(formData));
   if (!parsed.success) return fieldErrors(parsed.error);
-  const { batch_id, contact_email, contact_phone, participants } = parsed.data;
+  const { batch_id, contact_email, contact_phone, participants, coupon_code } = parsed.data;
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("book_batch", {
@@ -43,6 +80,7 @@ export async function startBooking(_prev: FormState, formData: FormData): Promis
     p_contact_email: contact_email,
     p_contact_phone: contact_phone,
     p_participants: participants,
+    p_coupon_code: coupon_code || undefined,
   });
   if (error) {
     const known = BOOKING_ERRORS.find((message) => error.message.includes(message));

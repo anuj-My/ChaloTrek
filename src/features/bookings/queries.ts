@@ -131,7 +131,7 @@ export async function getMyBatchBookings(batchId: string) {
     .select(
       `id, start_date, end_date, total_seats, price_paise, deposit_paise, status, seats_left, batch_group_links(url),
        treks!inner(name, slug, organizer_id),
-       bookings(*, participants(*)),
+       bookings(*, participants(*), coupons(code)),
        waitlist_entries(id, email, num_people, notified_at, created_at)`,
     )
     .eq("id", batchId)

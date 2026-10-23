@@ -16,7 +16,7 @@ async function getBookingForEmail(bookingId: string) {
   const { data, error } = await admin
     .from("bookings")
     .select(
-      `id, booking_number, batch_id, contact_email, contact_phone, num_people, total_paise, paid_paise,
+      `id, booking_number, batch_id, contact_email, contact_phone, num_people, total_paise, paid_paise, discount_paise,
        batches!inner(start_date, end_date, price_paise, deposit_paise, batch_group_links(url),
          treks!inner(name, organizers!inner(name, email, phone, instagram_handle, owner_user_id))),
        participants(full_name)`,
@@ -83,7 +83,8 @@ export function emailNewBooking(bookingId: string, origin: string) {
         ["People", b.names],
         ["Contact", `${b.contact_email}\n${b.contact_phone}`],
         ["Total", formatRupees(b.total_paise)],
-        ["Due now", formatRupees(amountDueNowPaise(b.batch, b.num_people))],
+        ...(b.discount_paise > 0 ? [["Coupon discount", formatRupees(b.discount_paise)] as [string, string]] : []),
+        ["Due now", formatRupees(amountDueNowPaise(b.batch, b.num_people, b.discount_paise))],
       ],
       buttons: [{ label: "View bookings", url: `${origin}/dashboard/bookings/${b.batch_id}` }],
     };

@@ -189,6 +189,7 @@ function BookingList({ bookings, batch }: { bookings: OrganizerBooking[]; batch:
             <p>
               {booking.num_people} {booking.num_people === 1 ? "person" : "people"} ·{" "}
               {formatRupees(booking.total_paise)}
+              {booking.coupons && ` · ${booking.coupons.code} −${formatRupees(booking.discount_paise)}`}
             </p>
             {booking.paid_paise > 0 && (
               <p>
@@ -214,7 +215,7 @@ function BookingList({ bookings, batch }: { bookings: OrganizerBooking[]; batch:
                   suggestedPaise={
                     booking.displayStatus === "confirmed"
                       ? booking.paid_paise
-                      : amountDueNowPaise(batch, booking.num_people)
+                      : amountDueNowPaise(batch, booking.num_people, booking.discount_paise)
                   }
                 />
               )}

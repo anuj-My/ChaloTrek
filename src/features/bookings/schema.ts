@@ -31,11 +31,17 @@ export const participantSchema = z.object({
 
 export const PARTICIPANT_FIELDS = Object.keys(participantSchema.shape) as (keyof typeof participantSchema.shape)[];
 
+const couponCode = z.string().trim().toUpperCase().max(20);
+
+export const couponCheckSchema = z.object({ batch_id: z.uuid(), code: couponCode.min(1, "Enter a code") });
+
 export const bookingSchema = z.object({
   batch_id: z.uuid(),
   contact_email: z.email("Enter a valid email address").trim().toLowerCase(),
   contact_phone: phone,
   participants: z.array(participantSchema).min(1).max(MAX_PEOPLE_PER_BOOKING),
+  // Applied on the form after check_coupon(); book_batch() checks it again.
+  coupon_code: couponCode.optional(),
 });
 
 export type BookingInput = z.infer<typeof bookingSchema>;
@@ -49,6 +55,7 @@ export function bookingFromFormData(formData: FormData) {
     batch_id: formData.get("batch_id"),
     contact_email: formData.get("contact_email"),
     contact_phone: formData.get("contact_phone"),
+    coupon_code: formData.get("coupon_code") ?? undefined,
     participants: Array.from({ length: people }, (_, i) =>
       Object.fromEntries(PARTICIPANT_FIELDS.map((field) => [field, formData.get(`participants.${i}.${field}`) ?? ""])),
     ),

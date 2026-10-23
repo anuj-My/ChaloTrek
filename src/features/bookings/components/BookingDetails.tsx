@@ -83,12 +83,18 @@ export async function BookingDetails({ params }: { params: Promise<{ bookingId: 
 function PaymentPanel({ booking, status }: { booking: MyBooking; status: BookingDisplayStatus }) {
   const batch = booking.batches;
   const organizer = batch.treks.organizers;
-  const dueNow = amountDueNowPaise(batch, booking.num_people);
+  const dueNow = amountDueNowPaise(batch, booking.num_people, booking.discount_paise);
   const balance = booking.total_paise - booking.paid_paise;
   const bookAgain = `/o/${organizer.slug}/${batch.treks.slug}/book/${booking.batch_id}`;
 
   return (
     <section className="space-y-3 rounded-xl border p-5">
+      {booking.discount_paise > 0 && (
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Coupon discount</span>
+          <span>−{formatRupees(booking.discount_paise)}</span>
+        </div>
+      )}
       <div className="flex justify-between text-sm">
         <span className="text-muted-foreground">Total</span>
         <span>{formatRupees(booking.total_paise)}</span>

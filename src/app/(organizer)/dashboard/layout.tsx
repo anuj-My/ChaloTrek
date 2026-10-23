@@ -10,6 +10,7 @@ const nav = [
   { href: "/dashboard/treks", label: "Treks" },
   { href: "/dashboard/batches", label: "Batches" },
   { href: "/dashboard/bookings", label: "Bookings" },
+  { href: "/dashboard/coupons", label: "Coupons" },
   { href: "/dashboard/settings", label: "Settings" },
 ];
 

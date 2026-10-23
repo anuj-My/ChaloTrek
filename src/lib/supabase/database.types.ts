@@ -140,7 +140,9 @@ export type Database = {
           cancelled_by: Database["public"]["Enums"]["booking_canceller"] | null
           contact_email: string
           contact_phone: string
+          coupon_id: string | null
           created_at: string
+          discount_paise: number
           hold_expires_at: string | null
           id: string
           num_people: number
@@ -159,7 +161,9 @@ export type Database = {
           cancelled_by?: Database["public"]["Enums"]["booking_canceller"] | null
           contact_email: string
           contact_phone: string
+          coupon_id?: string | null
           created_at?: string
+          discount_paise?: number
           hold_expires_at?: string | null
           id?: string
           num_people: number
@@ -178,7 +182,9 @@ export type Database = {
           cancelled_by?: Database["public"]["Enums"]["booking_canceller"] | null
           contact_email?: string
           contact_phone?: string
+          coupon_id?: string | null
           created_at?: string
+          discount_paise?: number
           hold_expires_at?: string | null
           id?: string
           num_people?: number
@@ -191,6 +197,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bookings_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookings_batch_id_fkey"
             columns: ["batch_id"]
@@ -220,6 +233,63 @@ export type Database = {
           rules?: Json
         }
         Relationships: []
+      }
+      coupons: {
+        Row: {
+          active: boolean
+          amount_off_paise: number | null
+          code: string
+          created_at: string
+          id: string
+          max_uses: number | null
+          organizer_id: string
+          percent_off: number | null
+          trek_id: string | null
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          active?: boolean
+          amount_off_paise?: number | null
+          code: string
+          created_at?: string
+          id?: string
+          max_uses?: number | null
+          organizer_id: string
+          percent_off?: number | null
+          trek_id?: string | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          active?: boolean
+          amount_off_paise?: number | null
+          code?: string
+          created_at?: string
+          id?: string
+          max_uses?: number | null
+          organizer_id?: string
+          percent_off?: number | null
+          trek_id?: string | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "organizers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupons_trek_id_fkey"
+            columns: ["trek_id"]
+            isOneToOne: false
+            referencedRelation: "treks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organizer_kyc: {
         Row: {
@@ -668,6 +738,7 @@ export type Database = {
           p_batch_id: string
           p_contact_email: string
           p_contact_phone: string
+          p_coupon_code?: string
           p_participants: Json
           p_source?: Database["public"]["Enums"]["booking_source"]
         }
@@ -678,7 +749,9 @@ export type Database = {
           cancelled_by: Database["public"]["Enums"]["booking_canceller"] | null
           contact_email: string
           contact_phone: string
+          coupon_id: string | null
           created_at: string
+          discount_paise: number
           hold_expires_at: string | null
           id: string
           num_people: number
@@ -706,7 +779,9 @@ export type Database = {
           cancelled_by: Database["public"]["Enums"]["booking_canceller"] | null
           contact_email: string
           contact_phone: string
+          coupon_id: string | null
           created_at: string
+          discount_paise: number
           hold_expires_at: string | null
           id: string
           num_people: number
@@ -724,6 +799,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      check_coupon: {
+        Args: { p_batch_id: string; p_code: string }
+        Returns: {
+          amount_off_paise: number
+          code: string
+          percent_off: number
+        }[]
       }
       has_confirmed_booking: { Args: { b_id: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
@@ -743,7 +826,9 @@ export type Database = {
           cancelled_by: Database["public"]["Enums"]["booking_canceller"] | null
           contact_email: string
           contact_phone: string
+          coupon_id: string | null
           created_at: string
+          discount_paise: number
           hold_expires_at: string | null
           id: string
           num_people: number
