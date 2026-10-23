@@ -29,6 +29,35 @@ export type Database = {
         }
         Relationships: []
       }
+      batch_group_links: {
+        Row: {
+          batch_id: string
+          created_at: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_group_links_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: true
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       batches: {
         Row: {
           created_at: string
@@ -568,9 +597,11 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      has_confirmed_booking: { Args: { b_id: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_app_user: { Args: never; Returns: boolean }
       organizes_booking: { Args: { bk_id: string }; Returns: boolean }
+      owns_batch: { Args: { b_id: string }; Returns: boolean }
       owns_booking: { Args: { bk_id: string }; Returns: boolean }
       owns_organizer: { Args: { org_id: string }; Returns: boolean }
       owns_trek: { Args: { t_id: string }; Returns: boolean }

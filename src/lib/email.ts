@@ -10,7 +10,7 @@ export type EmailContent = {
   heading: string;
   paragraphs: string[];
   rows?: [label: string, value: string][];
-  button?: { label: string; url: string };
+  buttons?: { label: string; url: string }[];
 };
 
 export type Email = {
@@ -55,7 +55,7 @@ const escapeHtml = (value: string) =>
 
 // One plain layout for every email, with inline styles since email clients
 // ignore stylesheets. The text version is for clients that don't show HTML.
-function renderEmail({ heading, paragraphs, rows = [], button }: EmailContent) {
+function renderEmail({ heading, paragraphs, rows = [], buttons = [] }: EmailContent) {
   const font = "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif";
   const html = `<!doctype html>
 <html><body style="margin:0;padding:24px;background:#f5f5f4;${font};color:#1c1917">
@@ -73,8 +73,14 @@ ${
     : ""
 }
 ${
-  button
-    ? `<p style="margin:20px 0 0"><a href="${escapeHtml(button.url)}" style="display:inline-block;background:#1c1917;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:15px">${escapeHtml(button.label)}</a></p>`
+  buttons.length
+    ? `<p style="margin:20px 0 0">${buttons
+        .map(
+          // The first button is the main action; any others are outlined.
+          (b, i) =>
+            `<a href="${escapeHtml(b.url)}" style="display:inline-block;margin:0 8px 8px 0;${i === 0 ? "background:#1c1917;color:#ffffff" : "border:1px solid #d6d3d1;color:#1c1917"};text-decoration:none;padding:10px 18px;border-radius:8px;font-size:15px">${escapeHtml(b.label)}</a>`,
+        )
+        .join("")}</p>`
     : ""
 }
 </div>
@@ -86,7 +92,7 @@ ${
     "",
     ...paragraphs.flatMap((p) => [p, ""]),
     ...rows.map(([label, value]) => `${label}: ${value.replaceAll("\n", ", ")}`),
-    ...(button ? ["", `${button.label}: ${button.url}`] : []),
+    ...(buttons.length ? ["", ...buttons.map((b) => `${b.label}: ${b.url}`)] : []),
   ].join("\n");
 
   return { html, text };

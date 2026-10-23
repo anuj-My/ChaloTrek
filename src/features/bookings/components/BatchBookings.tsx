@@ -8,6 +8,7 @@ import { cancelBooking } from "../actions";
 import { getMyBatchBookings, type OrganizerBooking } from "../queries";
 import { amountDueNowPaise, bookingReference } from "../status";
 import { BookingStatusBadge } from "./BookingStatusBadge";
+import { GroupLinkForm } from "./GroupLinkForm";
 import { OfflinePaymentForm } from "./OfflinePaymentForm";
 
 // One batch for the organizer: totals, everyone going, and each booking.
@@ -56,6 +57,8 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
           </div>
         ))}
       </dl>
+
+      <GroupLinkForm batchId={batch.id} url={batch.batch_group_links?.url ?? null} />
 
       {active.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center">

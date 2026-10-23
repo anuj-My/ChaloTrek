@@ -17,7 +17,7 @@ async function getBookingForEmail(bookingId: string) {
     .from("bookings")
     .select(
       `id, booking_number, batch_id, contact_email, contact_phone, num_people, total_paise, paid_paise,
-       batches!inner(start_date, end_date, price_paise, deposit_paise,
+       batches!inner(start_date, end_date, price_paise, deposit_paise, batch_group_links(url),
          treks!inner(name, organizers!inner(name, email, phone, instagram_handle, owner_user_id))),
        participants(full_name)`,
     )
@@ -85,7 +85,7 @@ export function emailNewBooking(bookingId: string, origin: string) {
         ["Total", formatRupees(b.total_paise)],
         ["Due now", formatRupees(amountDueNowPaise(b.batch, b.num_people))],
       ],
-      button: { label: "View bookings", url: `${origin}/dashboard/bookings/${b.batch_id}` },
+      buttons: [{ label: "View bookings", url: `${origin}/dashboard/bookings/${b.batch_id}` }],
     };
     await sendEmail({
       to,
@@ -101,10 +101,12 @@ export function emailBookingConfirmed(bookingId: string, origin: string) {
   return send(bookingId, "booking confirmed", async (b) => {
     const balance = b.total_paise - b.paid_paise;
     const contact = organizerContact(b.organizer);
+    const groupUrl = b.batch.batch_group_links?.url;
     const content: EmailContent = {
       heading: "Your booking is confirmed",
       paragraphs: [
         `You're going on ${b.trekName} with ${b.organizer.name}. Keep your booking ID handy.`,
+        ...(groupUrl ? ["Join the batch's WhatsApp group to get updates from the organizer and meet your group."] : []),
         ...(contact ? [`Questions about the trek? Contact ${b.organizer.name}: ${contact}.`] : []),
       ],
       rows: [
@@ -117,7 +119,10 @@ export function emailBookingConfirmed(bookingId: string, origin: string) {
         ["Paid", formatRupees(b.paid_paise)],
         ...(balance > 0 ? [["Balance, paid to the organizer", formatRupees(balance)] as [string, string]] : []),
       ],
-      button: { label: "View booking", url: `${origin}/my-bookings/${b.id}` },
+      buttons: [
+        ...(groupUrl ? [{ label: "Join the WhatsApp group", url: groupUrl }] : []),
+        { label: "View booking", url: `${origin}/my-bookings/${b.id}` },
+      ],
     };
     await sendEmail({
       to: b.contact_email,
@@ -145,7 +150,7 @@ export function emailBookingCancelled(bookingId: string, origin: string) {
         ["Trek", b.trekName],
         ["Dates", b.dates],
       ],
-      button: { label: "View booking", url: `${origin}/my-bookings/${b.id}` },
+      buttons: [{ label: "View booking", url: `${origin}/my-bookings/${b.id}` }],
     };
     await sendEmail({
       to: b.contact_email,

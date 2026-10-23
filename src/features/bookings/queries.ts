@@ -36,7 +36,7 @@ export async function getBatchForBooking(organizerSlug: string, trekSlug: string
 
 export type BatchForBooking = NonNullable<Awaited<ReturnType<typeof getBatchForBooking>>>;
 
-const BOOKING_WITH_TREK = `*, batches!inner(start_date, end_date, price_paise, deposit_paise,
+const BOOKING_WITH_TREK = `*, batches!inner(start_date, end_date, price_paise, deposit_paise, batch_group_links(url),
   treks!inner(name, slug, organizers!inner(name, slug, instagram_handle)))`;
 
 // Bookings come back with `displayStatus`, worked out here at request time
@@ -126,7 +126,7 @@ export async function getMyBatchBookings(batchId: string) {
   const { data, error } = await supabase
     .from("batches")
     .select(
-      `id, start_date, end_date, total_seats, price_paise, deposit_paise, status, seats_left,
+      `id, start_date, end_date, total_seats, price_paise, deposit_paise, status, seats_left, batch_group_links(url),
        treks!inner(name, slug, organizer_id),
        bookings(*, participants(*))`,
     )

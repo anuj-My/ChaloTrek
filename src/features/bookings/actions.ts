@@ -11,7 +11,13 @@ import { siteConfig } from "@/lib/site-config";
 import { createClient } from "@/lib/supabase/server";
 
 import { emailBookingCancelled, emailBookingConfirmed, emailNewBooking } from "./emails";
-import { bookingFromFormData, bookingIdSchema, bookingSchema, offlinePaymentSchema } from "./schema";
+import {
+  bookingFromFormData,
+  bookingIdSchema,
+  bookingSchema,
+  groupLinkSchema,
+  offlinePaymentSchema,
+} from "./schema";
 
 // The site this request came in on, for links in emails.
 async function requestOrigin() {
@@ -125,6 +131,26 @@ export async function cancelBooking(_prev: FormState, formData: FormData): Promi
     const origin = await requestOrigin();
     after(() => emailBookingCancelled(data.id, origin));
   }
+  refresh();
+  return { ok: true };
+}
+
+// Organizer sets, changes or removes a batch's WhatsApp group link. RLS lets
+// only the batch's organizer write it.
+export async function saveGroupLink(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = groupLinkSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fieldErrors(parsed.error);
+  const { batch_id, url } = parsed.data;
+
+  const supabase = await createClient();
+  const { error } = url
+    ? await supabase.from("batch_group_links").upsert({ batch_id, url })
+    : await supabase.from("batch_group_links").delete().eq("batch_id", batch_id);
+  if (error) {
+    console.error("saveGroupLink failed:", error);
+    return { error: "Couldn't save the link. Please try again." };
+  }
+
   refresh();
   return { ok: true };
 }

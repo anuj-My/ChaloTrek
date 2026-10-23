@@ -135,6 +135,22 @@ function PaymentPanel({ booking, status }: { booking: MyBooking; status: Booking
               <span>{formatRupees(balance)}</span>
             </div>
           )}
+          {/* RLS shows the link only once the booking is confirmed. */}
+          {batch.batch_group_links && (
+            <div className="space-y-2 border-t pt-3">
+              <a
+                href={batch.batch_group_links.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonVariants({ size: "lg", className: "w-full" })}
+              >
+                Join the WhatsApp group
+              </a>
+              <p className="text-sm text-muted-foreground">
+                Get updates from {organizer.name} and meet your group before the trek.
+              </p>
+            </div>
+          )}
         </>
       )}
 

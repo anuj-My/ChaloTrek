@@ -67,3 +67,16 @@ export const offlinePaymentSchema = z.object({
 });
 
 export const bookingIdSchema = z.object({ booking_id: z.uuid() });
+
+// A batch's WhatsApp group invite link. Links copied from WhatsApp often end
+// in "?mode=…", which is dropped. Empty removes the link.
+const WHATSAPP_INVITE = /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]{10,40}$/;
+
+export const groupLinkSchema = z.object({
+  batch_id: z.uuid(),
+  url: z
+    .string()
+    .trim()
+    .transform((url) => url.split(/[?#]/)[0].replace(/\/+$/, "").replace(/^http:\/\//, "https://"))
+    .refine((url) => url === "" || WHATSAPP_INVITE.test(url), "Paste a WhatsApp group invite link (chat.whatsapp.com/…)"),
+});
