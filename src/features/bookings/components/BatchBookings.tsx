@@ -4,7 +4,7 @@ import { ActionButton } from "@/components/shared/ActionButton";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDateRange, formatDateTime, formatRupees } from "@/lib/format";
 
-import { cancelBooking } from "../actions";
+import { cancelBooking, removeWaitlistEntry } from "../actions";
 import { getMyBatchBookings, type OrganizerBooking } from "../queries";
 import { amountDueNowPaise, bookingReference } from "../status";
 import { BookingStatusBadge } from "./BookingStatusBadge";
@@ -112,6 +112,42 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
             <BookingList bookings={active} batch={batch} />
           </section>
         </>
+      )}
+
+      {batch.waitlist_entries.length > 0 && (
+        <section className="space-y-3">
+          <div>
+            <h2 className="font-heading text-lg font-semibold">
+              Waitlist ({batch.waitlist_entries.reduce((sum, e) => sum + e.num_people, 0)} people)
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              When seats free up, everyone whose group fits is emailed. Seats go to whoever books first. A long waitlist
+              may mean it&apos;s worth adding seats or another batch.
+            </p>
+          </div>
+          <ul className="divide-y rounded-lg border">
+            {batch.waitlist_entries.map((entry) => (
+              <li key={entry.id} className="flex flex-col gap-2 p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <p className="font-medium">{entry.email}</p>
+                  <p className="text-muted-foreground">
+                    {entry.num_people} {entry.num_people === 1 ? "person" : "people"} · joined{" "}
+                    {formatDateTime(entry.created_at)}
+                    {entry.notified_at && ` · emailed ${formatDateTime(entry.notified_at)}`}
+                  </p>
+                </div>
+                <ActionButton
+                  action={removeWaitlistEntry}
+                  fields={{ entry_id: entry.id }}
+                  variant="ghost"
+                  confirm={`Remove ${entry.email} from the waitlist?`}
+                >
+                  Remove
+                </ActionButton>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {batch.otherBookings.length > 0 && (

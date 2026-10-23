@@ -46,6 +46,11 @@ export function BatchOptions({ batches, trekPath }: Props) {
                     Book this batch
                   </Link>
                 )}
+                {batch.status === "open" && seats === 0 && (
+                  <Link href={`${trekPath}/book/${batch.id}`} className={cn(buttonVariants({ variant: "outline" }), "w-full")}>
+                    Join the waitlist
+                  </Link>
+                )}
               </li>
             );
           })}

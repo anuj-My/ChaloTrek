@@ -1,10 +1,13 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { after } from "next/server";
 
+import { notifyWaitlist } from "@/features/bookings/waitlist";
 import { getMyOrganizer } from "@/features/organizers/queries";
 import { todayInIndia } from "@/lib/format";
 import { fieldErrors, type FormState } from "@/lib/form-state";
+import { requestOrigin } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
 
 import { batchIdSchema, batchSchema, batchStatusSchema } from "./schema";
@@ -86,6 +89,10 @@ export async function updateBatch(_prev: FormState, formData: FormData): Promise
     return { error: "Couldn't save the batch. Please try again." };
   }
 
+  if (total_seats > batch.total_seats) {
+    const origin = await requestOrigin();
+    after(() => notifyWaitlist(batch.id, origin));
+  }
   refresh();
   return { ok: true };
 }
@@ -107,6 +114,10 @@ export async function setBatchStatus(_prev: FormState, formData: FormData): Prom
     return { error: "Couldn't change the status. Please try again." };
   }
 
+  if (parsed.data.status === "open") {
+    const origin = await requestOrigin();
+    after(() => notifyWaitlist(batch.id, origin));
+  }
   refresh();
   return { ok: true };
 }

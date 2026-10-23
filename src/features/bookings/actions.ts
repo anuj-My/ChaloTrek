@@ -1,28 +1,26 @@
 "use server";
 
 import { refresh } from "next/cache";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 
 import { getUser } from "@/features/auth/queries";
 import { fieldErrors, type FormState } from "@/lib/form-state";
-import { siteConfig } from "@/lib/site-config";
+import { requestOrigin } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
 
 import { emailBookingCancelled, emailBookingConfirmed, emailNewBooking } from "./emails";
 import {
+  batchIdSchema,
   bookingFromFormData,
   bookingIdSchema,
   bookingSchema,
   groupLinkSchema,
   offlinePaymentSchema,
+  waitlistEntryIdSchema,
+  waitlistSchema,
 } from "./schema";
-
-// The site this request came in on, for links in emails.
-async function requestOrigin() {
-  return (await headers()).get("origin") ?? siteConfig.url;
-}
+import { notifyWaitlist } from "./waitlist";
 
 // Messages raised by book_batch() that are safe and useful to show as-is.
 const BOOKING_ERRORS = ["Not enough seats left", "This batch is not taking bookings", "Batch not found"];
@@ -54,6 +52,9 @@ export async function startBooking(_prev: FormState, formData: FormData): Promis
     console.error("startBooking failed:", error);
     return { error: "Couldn't start your booking. Please try again." };
   }
+
+  // Booked, so they no longer need the waitlist for this batch.
+  await supabase.from("waitlist_entries").delete().eq("batch_id", batch_id).eq("user_id", user.id);
 
   const origin = await requestOrigin();
   after(() => emailNewBooking(data.id, origin));
@@ -127,10 +128,82 @@ export async function cancelBooking(_prev: FormState, formData: FormData): Promi
     return { error: "Couldn't cancel the booking. Please try again." };
   }
 
-  if (data.cancelled_by === "organizer") {
-    const origin = await requestOrigin();
-    after(() => emailBookingCancelled(data.id, origin));
+  const origin = await requestOrigin();
+  after(async () => {
+    if (data.cancelled_by === "organizer") await emailBookingCancelled(data.id, origin);
+    // The seats are free again.
+    await notifyWaitlist(data.batch_id, origin);
+  });
+  refresh();
+  return { ok: true };
+}
+
+// Trekker joins a full batch's waitlist, or changes how many people they're
+// waiting for. RLS allows it only on open batches of public treks.
+export async function joinWaitlist(_prev: FormState, formData: FormData): Promise<FormState> {
+  const user = await getUser();
+  if (!user?.email) return { error: "Your session ended. Please log in again." };
+
+  const parsed = waitlistSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Something went wrong. Please refresh and try again." };
+  const { batch_id, num_people } = parsed.data;
+
+  const supabase = await createClient();
+  const { data: batch } = await supabase.from("batches").select("seats_left").eq("id", batch_id).maybeSingle();
+  if ((batch?.seats_left ?? 0) >= num_people) {
+    return { error: "Seats just opened up. Refresh the page to book." };
   }
+
+  const { error } = await supabase
+    .from("waitlist_entries")
+    .upsert(
+      { batch_id, user_id: user.id, email: user.email, num_people, notified_at: null },
+      { onConflict: "batch_id,user_id" },
+    );
+  if (error) {
+    console.error("joinWaitlist failed:", error);
+    return { error: "Couldn't join the waitlist. This batch may have closed." };
+  }
+
+  refresh();
+  return { ok: true };
+}
+
+// Trekker leaves a waitlist they joined.
+export async function leaveWaitlist(_prev: FormState, formData: FormData): Promise<FormState> {
+  const user = await getUser();
+  if (!user) return { error: "Your session ended. Please log in again." };
+
+  const parsed = batchIdSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Something went wrong. Please refresh and try again." };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("waitlist_entries")
+    .delete()
+    .eq("batch_id", parsed.data.batch_id)
+    .eq("user_id", user.id);
+  if (error) {
+    console.error("leaveWaitlist failed:", error);
+    return { error: "Couldn't leave the waitlist. Please try again." };
+  }
+
+  refresh();
+  return { ok: true };
+}
+
+// Organizer removes someone from their batch's waitlist. RLS checks they run it.
+export async function removeWaitlistEntry(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = waitlistEntryIdSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Something went wrong. Please refresh and try again." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("waitlist_entries").delete().eq("id", parsed.data.entry_id);
+  if (error) {
+    console.error("removeWaitlistEntry failed:", error);
+    return { error: "Couldn't remove them. Please try again." };
+  }
+
   refresh();
   return { ok: true };
 }

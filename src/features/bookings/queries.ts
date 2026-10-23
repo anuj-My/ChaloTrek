@@ -128,12 +128,14 @@ export async function getMyBatchBookings(batchId: string) {
     .select(
       `id, start_date, end_date, total_seats, price_paise, deposit_paise, status, seats_left, batch_group_links(url),
        treks!inner(name, slug, organizer_id),
-       bookings(*, participants(*))`,
+       bookings(*, participants(*)),
+       waitlist_entries(id, email, num_people, notified_at, created_at)`,
     )
     .eq("id", batchId)
     .eq("treks.organizer_id", organizer.id)
     .order("created_at", { referencedTable: "bookings", ascending: false })
     .order("created_at", { referencedTable: "bookings.participants" })
+    .order("created_at", { referencedTable: "waitlist_entries" })
     .maybeSingle();
   if (error?.code === INVALID_UUID) notFound();
   if (error) throw error;
@@ -150,3 +152,16 @@ export async function getMyBatchBookings(batchId: string) {
 
 export type MyBatchBookings = Awaited<ReturnType<typeof getMyBatchBookings>>;
 export type OrganizerBooking = MyBatchBookings["activeBookings"][number];
+
+// The logged-in trekker's place on a batch's waitlist, or null.
+export async function getMyWaitlistEntry(batchId: string, userId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("waitlist_entries")
+    .select("num_people, email, notified_at")
+    .eq("batch_id", batchId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}

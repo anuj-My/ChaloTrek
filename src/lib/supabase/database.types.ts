@@ -530,6 +530,44 @@ export type Database = {
           },
         ]
       }
+      waitlist_entries: {
+        Row: {
+          batch_id: string
+          created_at: string
+          email: string
+          id: string
+          notified_at: string | null
+          num_people: number
+          user_id: string
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          email: string
+          id?: string
+          notified_at?: string | null
+          num_people: number
+          user_id: string
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          notified_at?: string | null
+          num_people?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_entries_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

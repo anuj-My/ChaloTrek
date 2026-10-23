@@ -80,3 +80,12 @@ export const groupLinkSchema = z.object({
     .transform((url) => url.split(/[?#]/)[0].replace(/\/+$/, "").replace(/^http:\/\//, "https://"))
     .refine((url) => url === "" || WHATSAPP_INVITE.test(url), "Paste a WhatsApp group invite link (chat.whatsapp.com/…)"),
 });
+
+export const waitlistSchema = z.object({
+  batch_id: z.uuid(),
+  num_people: z.coerce.number<string>().int().min(1).max(MAX_PEOPLE_PER_BOOKING),
+});
+
+export const batchIdSchema = z.object({ batch_id: z.uuid() });
+
+export const waitlistEntryIdSchema = z.object({ entry_id: z.uuid() });

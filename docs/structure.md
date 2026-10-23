@@ -30,7 +30,7 @@ supabase/migrations/         # SQL schema + RLS policies
   - `schema.ts` zod schemas shared by forms and actions
   - `types.ts`
 - **`features/marketing`** uses the section layout: `sections/<section>/<Section>.tsx`, composed in `Home.tsx`.
-- **Features may import from `components/` and `lib/`**, and from another feature's `queries.ts`/`types.ts`. Keep UI components inside their own feature.
+- **Features may import from `components/` and `lib/`**, and from another feature's `queries.ts`/`types.ts`, or its server-only side-effect helpers (e.g. `bookings/waitlist.ts`, called from batch actions when seats free up). Keep UI components inside their own feature.
 - **Supabase clients:** `lib/supabase/server.ts` in Server Components and actions, `client.ts` in Client Components, `admin.ts` (bypasses RLS) only in trusted server code like webhooks.
 - **Cache Components is on.** Request-time data (`params`, `cookies()`, DB reads) needs a `<Suspense>`/`loading.tsx` boundary or `"use cache"`.
 
