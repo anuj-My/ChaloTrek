@@ -83,6 +83,17 @@ export function BookingForm({ batch, maxPeople, defaultEmail }: Props) {
         <Button type="submit" size="lg" className="w-full" disabled={pending}>
           {pending ? "Holding your seats…" : "Continue to payment"}
         </Button>
+        <p className="text-xs text-muted-foreground">
+          By continuing, you agree to the{" "}
+          <a href="/terms" target="_blank" className="underline underline-offset-4">
+            terms of service
+          </a>{" "}
+          and the{" "}
+          <a href="/refund-policy" target="_blank" className="underline underline-offset-4">
+            cancellation and refund policy
+          </a>
+          .
+        </p>
       </section>
     </form>
   );
