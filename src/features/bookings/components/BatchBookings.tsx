@@ -22,6 +22,7 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
   const collected = active.filter((b) => b.displayStatus === "confirmed").reduce((sum, b) => sum + b.paid_paise, 0);
   const participants = active.flatMap((booking) => booking.participants.map((p) => ({ ...p, booking })));
   const toCheck = active.filter((b) => b.proofToCheck).length;
+  const missingDetails = participants.filter((p) => p.age === null).length;
 
   const stats = [
     { label: "Confirmed", value: people("confirmed") },
@@ -81,7 +82,15 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
       ) : (
         <>
           <section className="space-y-3">
-            <h2 className="type-4">Participants ({participants.length})</h2>
+            <div>
+              <h2 className="type-4">Participants ({participants.length})</h2>
+              {missingDetails > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {participants.length - missingDetails} of {participants.length} have filled in their details. The
+                  rest were sent a link by the person who booked; remind them on the booking&apos;s phone number.
+                </p>
+              )}
+            </div>
             <div className="overflow-x-auto rounded-lg border">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50 text-left text-muted-foreground">
@@ -98,15 +107,25 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
                   {participants.map((p) => (
                     <tr key={p.id} className="align-top">
                       <td className="p-3 font-medium whitespace-nowrap">{p.full_name}</td>
-                      <td className="p-3 whitespace-nowrap capitalize">
-                        {p.age} · {p.gender}
-                      </td>
-                      <td className="p-3 whitespace-nowrap">{p.phone ?? "—"}</td>
-                      <td className="p-3 whitespace-nowrap">
-                        {p.emergency_contact_name}
-                        <span className="block text-muted-foreground">{p.emergency_contact_phone}</span>
-                      </td>
-                      <td className="max-w-64 p-3 whitespace-pre-line">{p.medical_notes ?? "—"}</td>
+                      {p.age === null ? (
+                        <>
+                          <td className="p-3 whitespace-nowrap text-muted-foreground">Waiting for details</td>
+                          <td className="p-3 whitespace-nowrap">{p.phone ?? "—"}</td>
+                          <td colSpan={2} className="p-3" />
+                        </>
+                      ) : (
+                        <>
+                          <td className="p-3 whitespace-nowrap capitalize">
+                            {p.age} · {p.gender}
+                          </td>
+                          <td className="p-3 whitespace-nowrap">{p.phone ?? "—"}</td>
+                          <td className="p-3 whitespace-nowrap">
+                            {p.emergency_contact_name}
+                            <span className="block text-muted-foreground">{p.emergency_contact_phone}</span>
+                          </td>
+                          <td className="max-w-64 p-3 whitespace-pre-line">{p.medical_notes ?? "—"}</td>
+                        </>
+                      )}
                       <td className="p-3 whitespace-nowrap text-muted-foreground">
                         {bookingReference(p.booking.booking_number)}
                         {p.booking.displayStatus === "held" && <span className="block">Awaiting payment</span>}

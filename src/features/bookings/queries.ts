@@ -51,7 +51,7 @@ export async function getMyBooking(bookingId: string) {
   const { data, error } = await supabase
     .from("bookings")
     .select(
-      `${BOOKING_WITH_TREK}, participants(full_name, age, gender, created_at),
+      `${BOOKING_WITH_TREK}, participants(id, full_name, age, gender, details_token, created_at),
        reviews(rating, body, author_name, hidden),
        payment_proofs(id, amount_paise, utr, status, reject_reason, created_at)`,
     )
@@ -80,6 +80,18 @@ export async function listMyBookings() {
   const now = Date.now();
   return data.map((booking) => ({ ...booking, displayStatus: bookingDisplayStatus(booking, now) }));
 }
+
+// A co-traveller's details link (no login: the token is the key). Null for
+// an unknown or malformed token.
+export async function getParticipantByToken(token: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_participant_by_token", { p_token: token }).maybeSingle();
+  if (error?.code === INVALID_UUID) return null;
+  if (error) throw error;
+  return data;
+}
+
+export type ParticipantByToken = NonNullable<Awaited<ReturnType<typeof getParticipantByToken>>>;
 
 // ─── Organizer side ─────────────────────────────────────────────────────────
 // RLS lets organizers read bookings and participants on their own treks only,

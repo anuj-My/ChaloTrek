@@ -424,13 +424,14 @@ export type Database = {
       }
       participants: {
         Row: {
-          age: number
+          age: number | null
           booking_id: string
           created_at: string
-          emergency_contact_name: string
-          emergency_contact_phone: string
+          details_token: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
           full_name: string
-          gender: Database["public"]["Enums"]["gender"]
+          gender: Database["public"]["Enums"]["gender"] | null
           id: string
           id_proof_path: string | null
           medical_notes: string | null
@@ -438,13 +439,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          age: number
+          age?: number | null
           booking_id: string
           created_at?: string
-          emergency_contact_name: string
-          emergency_contact_phone: string
+          details_token?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           full_name: string
-          gender: Database["public"]["Enums"]["gender"]
+          gender?: Database["public"]["Enums"]["gender"] | null
           id?: string
           id_proof_path?: string | null
           medical_notes?: string | null
@@ -452,13 +454,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          age?: number
+          age?: number | null
           booking_id?: string
           created_at?: string
-          emergency_contact_name?: string
-          emergency_contact_phone?: string
+          details_token?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           full_name?: string
-          gender?: Database["public"]["Enums"]["gender"]
+          gender?: Database["public"]["Enums"]["gender"] | null
           id?: string
           id_proof_path?: string | null
           medical_notes?: string | null
@@ -929,6 +932,24 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_participant_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          age: number
+          booking_number: number
+          can_edit: boolean
+          emergency_contact_name: string
+          emergency_contact_phone: string
+          end_date: string
+          full_name: string
+          gender: Database["public"]["Enums"]["gender"]
+          medical_notes: string
+          organizer_name: string
+          phone: string
+          start_date: string
+          trek_name: string
+        }[]
+      }
       has_confirmed_booking: { Args: { b_id: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_app_user: { Args: never; Returns: boolean }
@@ -938,6 +959,10 @@ export type Database = {
       owns_organizer: { Args: { org_id: string }; Returns: boolean }
       owns_trek: { Args: { t_id: string }; Returns: boolean }
       owns_trek_photo_path: { Args: { path: string }; Returns: boolean }
+      participant_details_open: {
+        Args: { p: Database["public"]["Tables"]["participants"]["Row"] }
+        Returns: boolean
+      }
       payment_proof_booking: { Args: { path: string }; Returns: string }
       record_offline_payment: {
         Args: { p_booking_id: string; p_paid_paise: number }
@@ -988,6 +1013,18 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      save_participant_details: {
+        Args: {
+          p_age: number
+          p_emergency_contact_name: string
+          p_emergency_contact_phone: string
+          p_gender: Database["public"]["Enums"]["gender"]
+          p_medical_notes: string
+          p_phone: string
+          p_token: string
+        }
+        Returns: undefined
       }
       seats_left: {
         Args: { "": Database["public"]["Tables"]["batches"]["Row"] }

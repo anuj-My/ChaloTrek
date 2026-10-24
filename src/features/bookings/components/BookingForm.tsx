@@ -182,18 +182,76 @@ function CouponField({
   );
 }
 
+// Everyone after the first can be left to fill in their own details from a
+// link, so the person booking needs only their name.
 function ParticipantFields({ index, errors }: { index: number; errors: Record<string, string | undefined> }) {
+  const [selfFill, setSelfFill] = useState(false);
+  const name = (field: string) => `participants.${index}.${field}`;
+  const id = (field: string) => `p${index}-${field}`;
+  const error = (field: string) => errors[name(field)];
+
+  const fullName = (
+    <FormField label="Full name" htmlFor={id("full_name")} error={error("full_name")} hint="As on their ID">
+      <Input id={id("full_name")} name={name("full_name")} autoComplete={index === 0 ? "name" : "off"} required aria-invalid={!!error("full_name")} />
+    </FormField>
+  );
+  const phone = (
+    <FormField label="Phone" htmlFor={id("phone")} error={error("phone")} hint="Optional">
+      <Input id={id("phone")} name={name("phone")} type="tel" inputMode="tel" aria-invalid={!!error("phone")} />
+    </FormField>
+  );
+
+  return (
+    <fieldset className="space-y-4">
+      <legend className="type-4">Person {index + 1}</legend>
+      {index > 0 && (
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            name={name("self_fill")}
+            checked={selfFill}
+            onChange={(e) => setSelfFill(e.target.checked)}
+            className="mt-0.5 size-4 accent-primary"
+          />
+          <span>
+            They&apos;ll fill in their own details
+            <span className="block text-muted-foreground">
+              You&apos;ll get a link to send them for their age, emergency contact and medical details.
+            </span>
+          </span>
+        </label>
+      )}
+      {selfFill ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {fullName}
+          {phone}
+        </div>
+      ) : (
+        <ParticipantDetails index={index} errors={errors} fullName={fullName} phone={phone} />
+      )}
+    </fieldset>
+  );
+}
+
+function ParticipantDetails({
+  index,
+  errors,
+  fullName,
+  phone,
+}: {
+  index: number;
+  errors: Record<string, string | undefined>;
+  fullName: React.ReactNode;
+  phone: React.ReactNode;
+}) {
   const name = (field: string) => `participants.${index}.${field}`;
   const id = (field: string) => `p${index}-${field}`;
   const error = (field: string) => errors[name(field)];
 
   return (
-    <fieldset className="space-y-4">
-      <legend className="type-4">Person {index + 1}</legend>
+    <>
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField label="Full name" htmlFor={id("full_name")} error={error("full_name")} hint="As on their ID">
-          <Input id={id("full_name")} name={name("full_name")} autoComplete={index === 0 ? "name" : "off"} required aria-invalid={!!error("full_name")} />
-        </FormField>
+        {fullName}
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Age" htmlFor={id("age")} error={error("age")}>
             <Input id={id("age")} name={name("age")} type="number" inputMode="numeric" min={5} max={90} required aria-invalid={!!error("age")} />
@@ -211,9 +269,7 @@ function ParticipantFields({ index, errors }: { index: number; errors: Record<st
             </NativeSelect>
           </FormField>
         </div>
-        <FormField label="Phone" htmlFor={id("phone")} error={error("phone")} hint="Optional">
-          <Input id={id("phone")} name={name("phone")} type="tel" inputMode="tel" aria-invalid={!!error("phone")} />
-        </FormField>
+        {phone}
         <div className="hidden sm:block" />
         <FormField label="Emergency contact name" htmlFor={id("emergency_contact_name")} error={error("emergency_contact_name")}>
           <Input id={id("emergency_contact_name")} name={name("emergency_contact_name")} required aria-invalid={!!error("emergency_contact_name")} />
@@ -230,6 +286,6 @@ function ParticipantFields({ index, errors }: { index: number; errors: Record<st
       >
         <Textarea id={id("medical_notes")} name={name("medical_notes")} rows={2} aria-invalid={!!error("medical_notes")} />
       </FormField>
-    </fieldset>
+    </>
   );
 }

@@ -13,7 +13,7 @@ export function Privacy() {
   const operator = legalName || name;
 
   return (
-    <LegalPage title="Privacy policy" updated="23 Oct 2026">
+    <LegalPage title="Privacy policy" updated="24 Oct 2026">
       <p>
         This policy explains what personal data {operator} collects through {name}, why, and the choices you have. We
         collect only what is needed to book and run treks.
@@ -27,6 +27,8 @@ export function Privacy() {
         <li>
           <strong>Booking details:</strong> a contact email and phone number, and for each person on the booking their
           name, age, gender, optional phone number, an emergency contact, and any medical notes you choose to share.
+          If someone books for you, they may give only your name, and you add the rest through a private link they send
+          you; anyone with that link can see and change those details until the trek starts.
         </li>
         <li>
           <strong>Organizers:</strong> business name and contact details, PAN, GSTIN, bank account and tourism

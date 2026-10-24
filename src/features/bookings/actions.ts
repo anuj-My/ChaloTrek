@@ -24,6 +24,7 @@ import {
   couponCheckSchema,
   groupLinkSchema,
   offlinePaymentSchema,
+  participantDetailsFormSchema,
   paymentProofSchema,
   reviewProofSchema,
   reviewSchema,
@@ -393,6 +394,37 @@ export async function reviewPaymentProof(_prev: FormState, formData: FormData): 
   } else if (proof.bookings.status !== "confirmed") {
     after(() => emailBookingConfirmed(proof.booking_id, origin));
   }
+  refresh();
+  return { ok: true };
+}
+
+// A co-traveller fills in their own details from the link the person who
+// booked sent them. No login; the database checks the token and that the
+// booking is still active and the trek hasn't started.
+export async function saveParticipantDetails(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = participantDetailsFormSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fieldErrors(parsed.error);
+  const { token, age, gender, phone, emergency_contact_name, emergency_contact_phone, medical_notes } = parsed.data;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("save_participant_details", {
+    p_token: token,
+    p_age: age,
+    p_gender: gender,
+    p_phone: phone,
+    p_emergency_contact_name: emergency_contact_name,
+    p_emergency_contact_phone: emergency_contact_phone,
+    p_medical_notes: medical_notes,
+  });
+  if (error) {
+    if (error.message.includes("can no longer be changed")) {
+      return { error: "This booking can no longer be changed. Contact the person who booked." };
+    }
+    if (error.message.includes("Link not found")) return { error: "This link isn't valid." };
+    console.error("saveParticipantDetails failed:", error);
+    return { error: "Couldn't save your details. Please try again." };
+  }
+
   refresh();
   return { ok: true };
 }

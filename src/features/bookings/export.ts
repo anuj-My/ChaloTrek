@@ -21,6 +21,7 @@ const HEADER = [
   "Emergency contact",
   "Emergency phone",
   "Medical notes",
+  "Details",
   "Booking phone",
   "Booking email",
 ];
@@ -40,6 +41,7 @@ export async function participantsCsv(batchId: string) {
       p.emergency_contact_name,
       p.emergency_contact_phone,
       p.medical_notes,
+      p.age === null ? "Not filled in yet" : "",
       booking.contact_phone,
       booking.contact_email,
     ]),

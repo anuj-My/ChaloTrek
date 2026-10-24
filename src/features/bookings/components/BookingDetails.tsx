@@ -10,6 +10,7 @@ import { amountDueNowPaise, type BookingDisplayStatus, bookingReference } from "
 import { BookingStatusBadge } from "./BookingStatusBadge";
 import { HoldTimer } from "./HoldTimer";
 import { ReviewForm } from "./ReviewForm";
+import { ShareDetailsLink } from "./ShareDetailsLink";
 import { UpiPayment } from "./UpiPayment";
 
 // A trekker's booking: what they booked, who's going, and paying for it.
@@ -19,6 +20,9 @@ export async function BookingDetails({ params }: { params: Promise<{ bookingId: 
   const status = booking.displayStatus;
   const batch = booking.batches;
   const trek = batch.treks;
+  // Co-travellers can fill in their details until the trek starts.
+  const detailsOpen = (status === "held" || status === "confirmed") && batch.start_date > todayInIndia();
+  const missing = booking.participants.filter((p) => p.age === null).length;
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -63,13 +67,30 @@ export async function BookingDetails({ params }: { params: Promise<{ bookingId: 
         <h2 className="type-4">
           {booking.num_people} {booking.num_people === 1 ? "person" : "people"}
         </h2>
+        {missing > 0 && detailsOpen && (
+          <p className="text-sm text-muted-foreground">
+            {missing === 1 ? "1 person still needs" : `${missing} people still need`} to fill in their details. Send
+            each one their link; the organizer needs these before the trek.
+          </p>
+        )}
         <ul className="divide-y rounded-lg border">
-          {booking.participants.map((p, i) => (
-            <li key={i} className="flex justify-between p-3 text-sm">
+          {booking.participants.map((p) => (
+            <li key={p.id} className="flex flex-col gap-2 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
               <span className="font-medium">{p.full_name}</span>
-              <span className="text-muted-foreground capitalize">
-                {p.age} · {p.gender}
-              </span>
+              {p.age !== null ? (
+                <span className="text-muted-foreground capitalize">
+                  {p.age} · {p.gender}
+                  {p.details_token && " · filled in by them"}
+                </span>
+              ) : detailsOpen && p.details_token ? (
+                <ShareDetailsLink
+                  token={p.details_token}
+                  firstName={p.full_name.split(" ")[0]}
+                  trekName={trek.name}
+                />
+              ) : (
+                <span className="text-muted-foreground">Details not filled in</span>
+              )}
             </li>
           ))}
         </ul>

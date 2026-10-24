@@ -19,7 +19,7 @@ async function getBookingForEmail(bookingId: string) {
       `id, booking_number, batch_id, contact_email, contact_phone, num_people, total_paise, paid_paise, discount_paise,
        batches!inner(start_date, end_date, price_paise, deposit_paise, batch_group_links(url),
          treks!inner(name, organizers!inner(name, email, phone, instagram_handle, upi_id, owner_user_id))),
-       participants(full_name)`,
+       participants(full_name, age)`,
     )
     .eq("id", bookingId)
     .order("created_at", { referencedTable: "participants" })
@@ -36,6 +36,7 @@ async function getBookingForEmail(bookingId: string) {
     reference: bookingReference(data.booking_number),
     dates: formatDateRange(batch.start_date, batch.end_date),
     names: data.participants.map((p) => p.full_name).join("\n"),
+    missingDetails: data.participants.filter((p) => p.age === null).map((p) => p.full_name),
   };
 }
 
@@ -47,6 +48,14 @@ async function organizerEmail(organizer: BookingForEmail["organizer"]) {
   const { data, error } = await createAdminClient().auth.admin.getUserById(organizer.owner_user_id);
   if (error) throw error;
   return data.user.email ?? null;
+}
+
+// For the person who booked, when co-travellers haven't filled in their details.
+function missingDetailsNote(b: BookingForEmail) {
+  if (!b.missingDetails.length) return [];
+  return [
+    `Still waiting for details from ${b.missingDetails.join(", ")}. Send them their links from your booking page; the organizer needs these before the trek.`,
+  ];
 }
 
 const people = (n: number) => `${n} ${n === 1 ? "person" : "people"}`;
@@ -159,6 +168,7 @@ export function emailBookingConfirmed(bookingId: string, origin: string) {
       heading: "Your booking is confirmed",
       paragraphs: [
         `You're going on ${b.trekName} with ${b.organizer.name}. Keep your booking ID handy.`,
+        ...missingDetailsNote(b),
         ...(groupUrl ? ["Join the batch's WhatsApp group to get updates from the organizer and meet your group."] : []),
         ...(contact ? [`Questions about the trek? Contact ${b.organizer.name}: ${contact}.`] : []),
       ],
@@ -256,6 +266,7 @@ export function emailTrekReminder(bookingId: string, origin: string) {
         heading: `${b.trekName} starts in 2 days`,
         paragraphs: [
           `Time to pack! Your trek with ${b.organizer.name} runs ${b.dates}.`,
+          ...missingDetailsNote(b),
           ...(groupUrl ? ["Check the batch's WhatsApp group for the pickup point, timings and packing list."] : []),
           ...(contact ? [`Questions? Contact ${b.organizer.name}: ${contact}.`] : []),
         ],

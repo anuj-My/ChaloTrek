@@ -15,8 +15,11 @@ const phone = z
 
 const optionalPhone = z.union([z.literal(""), phone]);
 
-export const participantSchema = z.object({
-  full_name: z.string().trim().min(2, "Enter their full name").max(100),
+const fullName = z.string().trim().min(2, "Enter their full name").max(100);
+
+// What each person fills in about themselves, on the booking form or on
+// their own details link.
+export const participantDetailsSchema = z.object({
   age: z
     .string()
     .trim()
@@ -29,7 +32,17 @@ export const participantSchema = z.object({
   medical_notes: z.string().trim().max(500, "At most 500 characters"),
 });
 
-export const PARTICIPANT_FIELDS = Object.keys(participantSchema.shape) as (keyof typeof participantSchema.shape)[];
+// On the booking form, someone can be left to fill in their own details
+// ("self_fill"), with just their name and optionally a phone.
+export const participantSchema = z.discriminatedUnion("self_fill", [
+  participantDetailsSchema.extend({ self_fill: z.literal(false), full_name: fullName }),
+  z.object({ self_fill: z.literal(true), full_name: fullName, phone: optionalPhone }),
+]);
+
+export const PARTICIPANT_FIELDS = ["full_name", ...Object.keys(participantDetailsSchema.shape)];
+
+// The details link: the token from the URL plus the person's details.
+export const participantDetailsFormSchema = participantDetailsSchema.extend({ token: z.uuid() });
 
 const couponCode = z.string().trim().toUpperCase().max(20);
 
@@ -56,9 +69,10 @@ export function bookingFromFormData(formData: FormData) {
     contact_email: formData.get("contact_email"),
     contact_phone: formData.get("contact_phone"),
     coupon_code: formData.get("coupon_code") ?? undefined,
-    participants: Array.from({ length: people }, (_, i) =>
-      Object.fromEntries(PARTICIPANT_FIELDS.map((field) => [field, formData.get(`participants.${i}.${field}`) ?? ""])),
-    ),
+    participants: Array.from({ length: people }, (_, i) => ({
+      ...Object.fromEntries(PARTICIPANT_FIELDS.map((field) => [field, formData.get(`participants.${i}.${field}`) ?? ""])),
+      self_fill: formData.get(`participants.${i}.self_fill`) === "on",
+    })),
   };
 }
 
