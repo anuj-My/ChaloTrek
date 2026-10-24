@@ -33,6 +33,7 @@
   --color-cta: var(--cta);
   --color-cta-foreground: var(--cta-foreground);
   --color-cta-glow: var(--cta-glow);
+  --color-alpenglow: var(--alpenglow);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-accent-foreground: var(--accent-foreground);
@@ -59,7 +60,8 @@
 /*
  * Chalo Trek palette: the Himalayas at first light. Misty snow-white
  * backgrounds, glacier blue for UI, and a sun-gold pill (sun on snow) only
- * for the one action that matters on a page (Book, Pay).
+ * for the one action that matters on a page (Book, Pay). Alpenglow apricot
+ * (the first sun on the peaks) is a small warm accent, like the logo dot.
  * Light is the default; .dark is a blue-hour variant for later. Every text
  * pair passes WCAG AA; see /style-guide (local only).
  */
@@ -82,6 +84,7 @@
   --cta: oklch(0.86 0.16 90); /* sun gold */
   --cta-foreground: oklch(0.25 0.04 245);
   --cta-glow: oklch(0.9 0.14 92);
+  --alpenglow: oklch(0.84 0.1 62);
   --success: oklch(0.52 0.11 160);
   --warning: oklch(0.52 0.12 65);
   --border: oklch(0.92 0.015 225);
@@ -122,6 +125,7 @@
   --cta: oklch(0.86 0.16 90); /* sun gold */
   --cta-foreground: oklch(0.17 0.03 245);
   --cta-glow: oklch(0.9 0.14 92);
+  --alpenglow: oklch(0.8 0.11 60);
   --success: oklch(0.78 0.12 160);
   --warning: oklch(0.83 0.12 80);
   --border: oklch(0.82 0.08 215 / 14%);
