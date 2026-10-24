@@ -4,7 +4,7 @@ import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
-import logo from "../../../public/brand/logo.png";
+import logo from "../../../public/brand/logo.svg";
 
 // The full logo (hiker + "chalotrek."), linking home. Size it with a height
 // class; the width follows the image's aspect ratio.
@@ -15,7 +15,6 @@ export function Logo({ className, preload }: { className?: string; preload?: boo
         src={logo}
         alt={siteConfig.name}
         preload={preload}
-        sizes="200px"
         className={cn("h-9 w-auto", className)}
       />
     </Link>
