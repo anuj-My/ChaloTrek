@@ -1,21 +1,50 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
-import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
 export function Hero() {
   return (
-    <section className="mx-auto max-w-6xl px-4 pt-20 pb-16">
-      <h1 className="font-heading text-4xl font-semibold tracking-tight md:text-5xl">
-        {siteConfig.name}
-      </h1>
-      <p className="mt-4 max-w-xl text-lg text-muted-foreground">
-        {siteConfig.description}. See real dates, prices and seats left, and book online.
-      </p>
-      <Link href="#treks" className={cn(buttonVariants({ size: "lg" }), "mt-8")}>
-        See upcoming treks
-      </Link>
+    <section className="relative isolate flex min-h-[560px] items-end overflow-hidden bg-foreground md:min-h-[680px]">
+      <Image
+        src="/images/hero/hero-lake.jpg"
+        alt="A trekker standing by a still Himalayan lake below snow peaks"
+        fill
+        preload
+        sizes="100vw"
+        className="-z-10 object-cover object-[30%_center]"
+      />
+      {/* Darken the photo so the text reads, fading into night at the bottom. */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-foreground/30 via-foreground/45 to-foreground/95" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-foreground/60 via-transparent to-transparent" />
+
+      <div className="mx-auto w-full max-w-6xl px-4 pt-32 pb-16 md:pb-24">
+        <p className="text-xs font-medium tracking-[0.25em] text-secondary uppercase">
+          Verified organizers · Live seats
+        </p>
+        <h1 className="mt-4 max-w-3xl font-heading text-5xl leading-[1.05] font-medium tracking-tight text-white md:text-7xl">
+          Walk quietly into the high mountains.
+        </h1>
+        <p className="mt-6 max-w-lg text-lg text-white/75">
+          Pick a trek, choose a batch that fits your calendar, and book online with real dates,
+          prices and seats left.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link href="#treks" className={cn(buttonVariants({ variant: "cta", size: "lg" }))}>
+            See upcoming treks
+          </Link>
+          <Link
+            href="/treks"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "lg" }),
+              "border-white/30 bg-white/10 text-white backdrop-blur hover:bg-white/20 hover:text-white",
+            )}
+          >
+            Explore all treks
+          </Link>
+        </div>
+      </div>
     </section>
   );
 }

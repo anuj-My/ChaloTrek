@@ -9,7 +9,7 @@ export async function UpcomingTreks() {
   const treks = await listUpcomingPublicTreks(12);
 
   return (
-    <section id="treks" className="mx-auto max-w-6xl scroll-mt-8 space-y-6 px-4 pb-24">
+    <section id="treks" className="mx-auto max-w-6xl scroll-mt-8 space-y-6 px-4 pt-16 pb-24">
       <div className="flex items-baseline justify-between gap-4">
         <h2 className="font-heading text-2xl font-semibold">Upcoming treks</h2>
         <Link href="/treks" className="text-sm underline underline-offset-4">
@@ -37,7 +37,7 @@ export async function UpcomingTreks() {
 
 export function UpcomingTreksSkeleton() {
   return (
-    <section className="mx-auto max-w-6xl space-y-6 px-4 pb-24" aria-busy="true">
+    <section className="mx-auto max-w-6xl space-y-6 px-4 pt-16 pb-24" aria-busy="true">
       <div className="h-8 w-48 animate-pulse rounded-md bg-muted" />
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {[0, 1, 2].map((i) => (
