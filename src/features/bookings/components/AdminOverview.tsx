@@ -43,7 +43,7 @@ export async function AdminOverview() {
       {stats.organizers.awaitingReview > 0 && (
         <Link
           href="/admin/organizers"
-          className="block rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100"
+          className="block rounded-lg border border-warning/30 bg-warning/10 p-4 text-sm text-warning hover:bg-warning/15"
         >
           {stats.organizers.awaitingReview} {stats.organizers.awaitingReview === 1 ? "organizer is" : "organizers are"}{" "}
           waiting for KYC review →

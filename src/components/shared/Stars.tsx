@@ -11,7 +11,7 @@ export function Stars({ rating, className }: { rating: number; className?: strin
         <StarIcon
           key={n}
           aria-hidden
-          className={cn("size-4", n <= filled ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40")}
+          className={cn("size-4", n <= filled ? "fill-cta text-cta" : "text-muted-foreground/40")}
         />
       ))}
     </span>

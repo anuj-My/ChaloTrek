@@ -76,7 +76,7 @@ async function Overview({ organizer }: { organizer: MyOrganizer }) {
           {steps.map((step) => (
             <li key={step.label} className="flex items-center gap-2 text-sm">
               {step.done ? (
-                <CheckCircle2Icon className="size-5 shrink-0 text-emerald-600" aria-label="Done" />
+                <CheckCircle2Icon className="size-5 shrink-0 text-success" aria-label="Done" />
               ) : (
                 <CircleIcon className="size-5 shrink-0 text-muted-foreground" aria-label="To do" />
               )}

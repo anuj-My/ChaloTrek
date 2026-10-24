@@ -57,7 +57,7 @@ export function ReviewForm({
                   aria-hidden
                   className={cn(
                     "size-7 rounded-sm peer-focus-visible:ring-2 peer-focus-visible:ring-ring",
-                    n <= shown ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40",
+                    n <= shown ? "fill-cta text-cta" : "text-muted-foreground/40",
                   )}
                 />
                 <span className="sr-only">

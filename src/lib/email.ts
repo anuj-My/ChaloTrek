@@ -67,16 +67,16 @@ const escapeHtml = (value: string) =>
 function renderEmail({ heading, paragraphs, rows = [], buttons = [] }: EmailContent) {
   const font = "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif";
   const html = `<!doctype html>
-<html><body style="margin:0;padding:24px;background:#f5f5f4;${font};color:#1c1917">
+<html><body style="margin:0;padding:24px;background:#f8fcfe;${font};color:#152839">
 <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;padding:28px">
-<h1 style="margin:0 0 16px;font-size:20px">${escapeHtml(heading)}</h1>
+<h1 style="margin:0 0 16px;font-size:22px;font-weight:600;font-family:Newsreader,Georgia,serif">${escapeHtml(heading)}</h1>
 ${paragraphs.map((p) => `<p style="margin:0 0 12px;font-size:15px;line-height:1.5">${escapeHtml(p)}</p>`).join("\n")}
 ${
   rows.length
     ? `<table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px">${rows
         .map(
           ([label, value]) =>
-            `<tr><td style="padding:8px 0;border-top:1px solid #e7e5e4;color:#78716c;vertical-align:top;width:40%">${escapeHtml(label)}</td><td style="padding:8px 0;border-top:1px solid #e7e5e4;white-space:pre-line">${escapeHtml(value)}</td></tr>`,
+            `<tr><td style="padding:8px 0;border-top:1px solid #dbe7ec;color:#546673;vertical-align:top;width:40%">${escapeHtml(label)}</td><td style="padding:8px 0;border-top:1px solid #dbe7ec;white-space:pre-line">${escapeHtml(value)}</td></tr>`,
         )
         .join("")}</table>`
     : ""
@@ -87,13 +87,13 @@ ${
         .map(
           // The first button is the main action; any others are outlined.
           (b, i) =>
-            `<a href="${escapeHtml(b.url)}" style="display:inline-block;margin:0 8px 8px 0;${i === 0 ? "background:#1c1917;color:#ffffff" : "border:1px solid #d6d3d1;color:#1c1917"};text-decoration:none;padding:10px 18px;border-radius:8px;font-size:15px">${escapeHtml(b.label)}</a>`,
+            `<a href="${escapeHtml(b.url)}" style="display:inline-block;margin:0 8px 8px 0;${i === 0 ? "background:#0975a2;color:#ffffff" : "border:1px solid #cfdee4;color:#152839"};text-decoration:none;padding:10px 18px;border-radius:999px;font-size:15px">${escapeHtml(b.label)}</a>`,
         )
         .join("")}</p>`
     : ""
 }
 </div>
-<p style="max-width:560px;margin:16px auto 0;font-size:12px;color:#78716c;text-align:center">${escapeHtml(siteConfig.name)} · ${escapeHtml(siteConfig.url.replace("https://", ""))}</p>
+<p style="max-width:560px;margin:16px auto 0;font-size:12px;color:#546673;text-align:center">${escapeHtml(siteConfig.name)} · ${escapeHtml(siteConfig.url.replace("https://", ""))}</p>
 </body></html>`;
 
   const text = [
