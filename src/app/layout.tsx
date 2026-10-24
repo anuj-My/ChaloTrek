@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { Geist_Mono, Instrument_Sans, Newsreader } from "next/font/google";
 import "./globals.css";
 
 import { siteConfig } from "@/lib/site-config";
 
-// Body text: friendly and very legible on phones.
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
+// Body text: a quiet, very legible sans.
+const instrumentSans = Instrument_Sans({
+  variable: "--font-instrument-sans",
   subsets: ["latin"],
 });
 
-// Headings: a grotesque with character, so the brand doesn't read as a SaaS tool.
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+// Headings: an editorial serif. The optical-size axis keeps big headlines
+// crisp and small ones sturdy.
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
+  axes: ["opsz"],
+  style: ["normal", "italic"],
 });
 
 const geistMono = Geist_Mono({
@@ -30,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${jakarta.variable} ${bricolage.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${instrumentSans.variable} ${newsreader.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
