@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { Logo } from "./Logo";
+
 type NavItem = { href: string; label: string };
 
 export function DashboardShell({
@@ -16,7 +18,10 @@ export function DashboardShell({
   return (
     <div className="flex min-h-full flex-1 flex-col md:flex-row">
       <aside className="flex flex-col border-b md:w-56 md:border-r md:border-b-0">
-        <div className="px-4 py-4 font-heading font-semibold">{title}</div>
+        <div className="space-y-1 px-4 py-4">
+          <Logo className="h-10" />
+          <p className="eyebrow">{title}</p>
+        </div>
         <nav className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-col">
           {nav.map((item) => (
             <Link
