@@ -7,6 +7,7 @@ import { Stars } from "@/components/shared/Stars";
 import { VerifiedBadge } from "@/components/shared/VerifiedBadge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { NotifyMe } from "@/features/alerts/components/NotifyMe";
 import { getTrekRatings } from "@/features/reviews/queries";
 import { listPublicTreks } from "@/features/treks/queries";
 import { formatDateRange, formatRupees } from "@/lib/format";
@@ -63,6 +64,11 @@ export async function DestinationPage({ params }: { params: Promise<{ destinatio
           {batches.length > 0 && ` · ${batches.length} upcoming ${batches.length === 1 ? "batch" : "batches"}`}
         </p>
         {destination.summary && <p className="whitespace-pre-line">{destination.summary}</p>}
+        <NotifyMe
+          target={{ kind: "destination", target_id: destination.id }}
+          name={destination.name}
+          path={`/treks/${destination.slug}`}
+        />
       </header>
 
       {treks.length === 0 ? (

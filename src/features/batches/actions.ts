@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 import { after } from "next/server";
 
+import { notifyNewBatches } from "@/features/alerts/notify";
 import { notifyWaitlist } from "@/features/bookings/waitlist";
 import { getMyOrganizer } from "@/features/organizers/queries";
 import { todayInIndia } from "@/lib/format";
@@ -83,6 +84,8 @@ export async function createBatch(_prev: FormState, formData: FormData): Promise
     return { error: "Couldn't add the batch. Please try again." };
   }
 
+  const origin = await requestOrigin();
+  after(() => notifyNewBatches(parsed.data.trek_id, origin));
   refresh();
   const skipped = dates.length - rows.length;
   if (dates.length === 1) return { ok: true, message: "Batch added." };

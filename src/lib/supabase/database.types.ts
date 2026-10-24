@@ -29,6 +29,81 @@ export type Database = {
         }
         Relationships: []
       }
+      batch_alert_emails: {
+        Row: {
+          alert_id: string
+          batch_id: string
+          sent_at: string
+        }
+        Insert: {
+          alert_id: string
+          batch_id: string
+          sent_at?: string
+        }
+        Update: {
+          alert_id?: string
+          batch_id?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_alert_emails_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "batch_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batch_alert_emails_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      batch_alerts: {
+        Row: {
+          created_at: string
+          destination_id: string | null
+          email: string
+          id: string
+          trek_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination_id?: string | null
+          email: string
+          id?: string
+          trek_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          destination_id?: string | null
+          email?: string
+          id?: string
+          trek_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_alerts_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "destinations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batch_alerts_trek_id_fkey"
+            columns: ["trek_id"]
+            isOneToOne: false
+            referencedRelation: "treks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       batch_group_links: {
         Row: {
           batch_id: string
@@ -1073,6 +1148,7 @@ export type Database = {
         } & "the function public.seats_left with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache"
       }
       seats_taken: { Args: { b_id: string }; Returns: number }
+      seed_batch_alert_emails: { Args: never; Returns: unknown }
       submit_payment_proof: {
         Args: {
           p_amount_paise: number

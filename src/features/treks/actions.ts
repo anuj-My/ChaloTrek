@@ -2,9 +2,12 @@
 
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
+import { notifyNewBatches } from "@/features/alerts/notify";
 import { getMyOrganizer } from "@/features/organizers/queries";
 import { fieldErrors, type FormState } from "@/lib/form-state";
+import { requestOrigin } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
 
 import { isOwnTrekPhotoPath, MAX_TREK_PHOTOS, TREK_PHOTOS_BUCKET } from "./photos";
@@ -88,6 +91,11 @@ export async function setTrekStatus(_prev: FormState, formData: FormData): Promi
     return { error: "Couldn't change the status. Please try again." };
   }
 
+  // Its batches are public now, so tell anyone following its destination.
+  if (parsed.data.status === "published") {
+    const origin = await requestOrigin();
+    after(() => notifyNewBatches(parsed.data.trek_id, origin));
+  }
   refresh();
   return { ok: true };
 }

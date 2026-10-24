@@ -12,7 +12,12 @@ export async function MyBookings() {
 
   return (
     <div className="space-y-6">
-      <h1 className="type-2">My bookings</h1>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="type-2">My bookings</h1>
+        <Link href="/my-bookings/alerts" className="text-sm underline underline-offset-4">
+          Batch alerts
+        </Link>
+      </div>
 
       {bookings.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center">

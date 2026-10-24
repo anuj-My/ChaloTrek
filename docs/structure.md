@@ -10,7 +10,7 @@ src/
 │  ├─ (organizer)/dashboard/ # organizer dashboard
 │  ├─ (admin)/admin/         # admin panel
 │  └─ api/webhooks/razorpay/ # bookings are confirmed here, never from the browser
-├─ features/<area>/          # organizers, treks, batches, bookings, payments, auth, marketing
+├─ features/<area>/          # organizers, treks, batches, bookings, payments, auth, marketing, alerts, insights, ...
 ├─ components/
 │  ├─ ui/                    # shadcn only, add via `npx shadcn add`
 │  └─ shared/                # our own components used by more than one feature
@@ -31,6 +31,7 @@ supabase/migrations/         # SQL schema + RLS policies
   - `types.ts`
 - **`features/marketing`** uses the section layout: `sections/<section>/<Section>.tsx`, composed in `Home.tsx`.
 - **Features may import from `components/` and `lib/`**, and from another feature's `queries.ts`/`types.ts`, or its server-only side-effect helpers (e.g. `bookings/waitlist.ts`, called from batch actions when seats free up). Keep UI components inside their own feature.
+  - Exception: a self-contained widget that brings its own data and actions, like `alerts/components/NotifyMe` ("Notify me about new batches" on trek and destination pages), may be rendered by other features.
 - **Supabase clients:** `lib/supabase/server.ts` in Server Components and actions, `client.ts` in Client Components, `admin.ts` (bypasses RLS) only in trusted server code like webhooks.
 - **Cache Components is on.** Request-time data (`params`, `cookies()`, DB reads) needs a `<Suspense>`/`loading.tsx` boundary or `"use cache"`.
 

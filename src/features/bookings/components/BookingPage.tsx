@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/shared/JsonLd";
 import { RatingSummary, ReviewList } from "@/components/shared/Reviews";
 import { VerifiedBadge } from "@/components/shared/VerifiedBadge";
+import { NotifyMe } from "@/features/alerts/components/NotifyMe";
 import { getTrekReviews } from "@/features/reviews/queries";
 import { getPublicTrek, type PublicTrek } from "@/features/treks/queries";
 import { siteConfig } from "@/lib/site-config";
@@ -64,6 +65,13 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
 
         <aside className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
           <BatchOptions batches={trek.batches} trekPath={`/o/${organizer.slug}/${trek.slug}`} />
+          <div className="mt-3">
+            <NotifyMe
+              target={{ kind: "trek", target_id: trek.id }}
+              name={`${organizer.name}'s ${trek.name}`}
+              path={`/o/${organizer.slug}/${trek.slug}`}
+            />
+          </div>
         </aside>
 
         <div className="min-w-0 space-y-10 lg:col-start-1">
