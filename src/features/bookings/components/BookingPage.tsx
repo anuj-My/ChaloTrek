@@ -10,6 +10,7 @@ import { siteConfig } from "@/lib/site-config";
 
 import { BatchOptions } from "./BatchOptions";
 import { TrekGallery } from "./TrekGallery";
+import { TrekViewBeacon } from "./TrekViewBeacon";
 
 // The public page an organizer shares: trek details and upcoming batches.
 export async function BookingPage({ params }: { params: Promise<{ organizer: string; trek: string }> }) {
@@ -31,6 +32,7 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       <JsonLd data={trekJsonLd(trek, reviews)} />
+      <TrekViewBeacon trekId={trek.id} />
       <TrekGallery name={trek.name} photos={trek.photos} />
 
       {/* Phones: header, batches, details. Desktop: batches in a sticky right column. */}

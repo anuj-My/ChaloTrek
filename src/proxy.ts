@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { safeNextPath } from "@/lib/safe-next-path";
+import { cleanSourceTag, SOURCE_COOKIE, SOURCE_COOKIE_MAX_AGE } from "@/lib/source-tag";
 import { redirectWithCookies, updateSession } from "@/lib/supabase/proxy";
 
 // Logged-out visitors are sent to /login before these pages render. This is
@@ -11,6 +12,12 @@ const PROTECTED_PREFIXES = ["/dashboard", "/admin", "/my-bookings"];
 export async function proxy(request: NextRequest) {
   const { response, userId } = await updateSession(request);
   const { pathname, search } = request.nextUrl;
+
+  // Remember where the visitor came from (?src=insta-bio), for booking sources.
+  const sourceTag = cleanSourceTag(request.nextUrl.searchParams.get("src"));
+  if (sourceTag) {
+    response.cookies.set(SOURCE_COOKIE, sourceTag, { maxAge: SOURCE_COOKIE_MAX_AGE, path: "/", sameSite: "lax" });
+  }
 
   const isProtected = PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),

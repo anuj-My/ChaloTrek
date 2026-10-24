@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { TrekCard } from "@/components/shared/TrekCard";
 import { listUpcomingPublicTreks } from "@/features/treks/queries";
+import { marketplaceHref } from "@/lib/source-tag";
 
 // Live treks with an open batch coming up, from every approved organizer.
 // Reads the database at request time, so Home renders it inside <Suspense>.
@@ -24,7 +25,7 @@ export async function UpcomingTreks() {
             <li key={trek.id}>
               <TrekCard
                 trek={trek}
-                href={`/o/${trek.organizers.slug}/${trek.slug}`}
+                href={marketplaceHref(`/o/${trek.organizers.slug}/${trek.slug}`)}
                 organizer={trek.organizers}
               />
             </li>

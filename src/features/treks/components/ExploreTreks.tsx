@@ -4,6 +4,7 @@ import { TrekCard } from "@/components/shared/TrekCard";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { todayInIndia } from "@/lib/format";
+import { marketplaceHref } from "@/lib/source-tag";
 
 import { listLiveDestinations } from "@/features/destinations/queries";
 
@@ -151,7 +152,7 @@ export async function ExploreTreks({ searchParams }: { searchParams: SearchParam
               <li key={trek.id}>
                 <TrekCard
                   trek={trek}
-                  href={`/o/${trek.organizers.slug}/${trek.slug}`}
+                  href={marketplaceHref(`/o/${trek.organizers.slug}/${trek.slug}`)}
                   organizer={trek.organizers}
                 />
               </li>

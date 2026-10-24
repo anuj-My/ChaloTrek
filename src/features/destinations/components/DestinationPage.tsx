@@ -11,6 +11,7 @@ import { getTrekRatings } from "@/features/reviews/queries";
 import { listPublicTreks } from "@/features/treks/queries";
 import { formatDateRange, formatRupees } from "@/lib/format";
 import { siteConfig } from "@/lib/site-config";
+import { marketplaceHref } from "@/lib/source-tag";
 
 import { getDestination } from "../queries";
 
@@ -83,7 +84,7 @@ export async function DestinationPage({ params }: { params: Promise<{ destinatio
                 return (
                   <li key={trek.id}>
                     <Link
-                      href={`/o/${trek.organizers.slug}/${trek.slug}`}
+                      href={marketplaceHref(`/o/${trek.organizers.slug}/${trek.slug}`)}
                       className="flex gap-4 p-4 hover:bg-muted/50"
                     >
                       <div className="relative hidden aspect-[4/3] w-32 shrink-0 overflow-hidden rounded-lg bg-muted sm:block">

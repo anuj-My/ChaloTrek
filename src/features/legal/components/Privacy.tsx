@@ -40,7 +40,9 @@ export function Privacy() {
           card, UPI PIN or bank login details.
         </li>
         <li>
-          <strong>Technical data:</strong> login cookies that keep you signed in, and basic server logs.
+          <strong>Technical data:</strong> login cookies that keep you signed in, a cookie that remembers which link
+          brought you to a trek (for example an organizer&apos;s Instagram bio) for 30 days, counts of trek page views,
+          and basic server logs.
         </li>
       </ul>
 

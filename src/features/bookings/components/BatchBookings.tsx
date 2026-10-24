@@ -229,7 +229,12 @@ function BookingList({ bookings, batch }: { bookings: OrganizerBooking[]; batch:
                   ` · ${formatRupees(booking.total_paise - booking.paid_paise)} due`}
               </p>
             )}
-            <p>Booked {formatDateTime(booking.created_at)}</p>
+            <p>
+              Booked {formatDateTime(booking.created_at)}
+              {booking.source === "marketplace"
+                ? " via Chalo Trek"
+                : booking.source_tag && ` via ${booking.source_tag}`}
+            </p>
             {booking.cancelled_at && (
               <p>
                 Cancelled {booking.cancelled_by === "trekker" ? "by the trekker" : "by you"}{" "}

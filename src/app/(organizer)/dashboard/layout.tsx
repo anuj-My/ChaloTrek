@@ -11,6 +11,7 @@ const nav = [
   { href: "/dashboard/batches", label: "Batches" },
   { href: "/dashboard/bookings", label: "Bookings" },
   { href: "/dashboard/coupons", label: "Coupons" },
+  { href: "/dashboard/insights", label: "Insights" },
   { href: "/dashboard/settings", label: "Settings" },
 ];
 

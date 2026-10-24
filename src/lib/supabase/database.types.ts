@@ -149,6 +149,7 @@ export type Database = {
           paid_offline: boolean
           paid_paise: number
           source: Database["public"]["Enums"]["booking_source"]
+          source_tag: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total_paise: number
           updated_at: string
@@ -170,6 +171,7 @@ export type Database = {
           paid_offline?: boolean
           paid_paise?: number
           source?: Database["public"]["Enums"]["booking_source"]
+          source_tag?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_paise: number
           updated_at?: string
@@ -191,6 +193,7 @@ export type Database = {
           paid_offline?: boolean
           paid_paise?: number
           source?: Database["public"]["Enums"]["booking_source"]
+          source_tag?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           total_paise?: number
           updated_at?: string
@@ -698,6 +701,35 @@ export type Database = {
           },
         ]
       }
+      trek_views: {
+        Row: {
+          day: string
+          source_tag: string
+          trek_id: string
+          views: number
+        }
+        Insert: {
+          day: string
+          source_tag?: string
+          trek_id: string
+          views?: number
+        }
+        Update: {
+          day?: string
+          source_tag?: string
+          trek_id?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trek_views_trek_id_fkey"
+            columns: ["trek_id"]
+            isOneToOne: false
+            referencedRelation: "treks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       treks: {
         Row: {
           cancellation_policy_id: number
@@ -834,6 +866,7 @@ export type Database = {
           p_coupon_code?: string
           p_participants: Json
           p_source?: Database["public"]["Enums"]["booking_source"]
+          p_source_tag?: string
         }
         Returns: {
           batch_id: string
@@ -851,6 +884,7 @@ export type Database = {
           paid_offline: boolean
           paid_paise: number
           source: Database["public"]["Enums"]["booking_source"]
+          source_tag: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total_paise: number
           updated_at: string
@@ -881,6 +915,7 @@ export type Database = {
           paid_offline: boolean
           paid_paise: number
           source: Database["public"]["Enums"]["booking_source"]
+          source_tag: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total_paise: number
           updated_at: string
@@ -982,6 +1017,7 @@ export type Database = {
           paid_offline: boolean
           paid_paise: number
           source: Database["public"]["Enums"]["booking_source"]
+          source_tag: string | null
           status: Database["public"]["Enums"]["booking_status"]
           total_paise: number
           updated_at: string
@@ -993,6 +1029,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      record_trek_view: {
+        Args: { p_source_tag?: string; p_trek_id: string }
+        Returns: undefined
       }
       review_payment_proof: {
         Args: { p_accept: boolean; p_proof_id: string; p_reason?: string }

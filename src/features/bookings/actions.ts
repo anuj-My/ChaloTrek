@@ -1,12 +1,14 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 
 import { getUser } from "@/features/auth/queries";
 import { fieldErrors, type FormState } from "@/lib/form-state";
 import { requestOrigin } from "@/lib/request-origin";
+import { cleanSourceTag, MARKETPLACE_TAG, SOURCE_COOKIE } from "@/lib/source-tag";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -84,6 +86,9 @@ export async function startBooking(_prev: FormState, formData: FormData): Promis
   if (!parsed.success) return fieldErrors(parsed.error);
   const { batch_id, contact_email, contact_phone, participants, coupon_code } = parsed.data;
 
+  // The link they came in on (see lib/source-tag.ts).
+  const sourceTag = cleanSourceTag((await cookies()).get(SOURCE_COOKIE)?.value);
+
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("book_batch", {
     p_batch_id: batch_id,
@@ -91,6 +96,8 @@ export async function startBooking(_prev: FormState, formData: FormData): Promis
     p_contact_phone: contact_phone,
     p_participants: participants,
     p_coupon_code: coupon_code || undefined,
+    p_source: sourceTag === MARKETPLACE_TAG ? "marketplace" : "organizer_link",
+    p_source_tag: sourceTag ?? undefined,
   });
   if (error) {
     const known = BOOKING_ERRORS.find((message) => error.message.includes(message));
@@ -427,4 +434,17 @@ export async function saveParticipantDetails(_prev: FormState, formData: FormDat
 
   refresh();
   return { ok: true };
+}
+
+// Counts a trek page view with the visitor's source tag. Called from the
+// browser (TrekViewBeacon); the database ignores treks that aren't public.
+export async function recordTrekView(trekId: string) {
+  if (!/^[0-9a-f-]{36}$/.test(trekId)) return;
+  const sourceTag = cleanSourceTag((await cookies()).get(SOURCE_COOKIE)?.value);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("record_trek_view", {
+    p_trek_id: trekId,
+    p_source_tag: sourceTag ?? undefined,
+  });
+  if (error) console.error("recordTrekView failed:", error);
 }
