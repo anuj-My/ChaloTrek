@@ -1148,7 +1148,6 @@ export type Database = {
         } & "the function public.seats_left with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache"
       }
       seats_taken: { Args: { b_id: string }; Returns: number }
-      seed_batch_alert_emails: { Args: never; Returns: unknown }
       submit_payment_proof: {
         Args: {
           p_amount_paise: number
