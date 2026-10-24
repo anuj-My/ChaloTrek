@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { ActionButton } from "@/components/shared/ActionButton";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { formatDateRange, formatRupees, todayInIndia } from "@/lib/format";
+import { formatDateRange, formatDateTime, formatRupees, todayInIndia } from "@/lib/format";
 
 import { cancelBooking } from "../actions";
 import { getMyBooking, type MyBooking } from "../queries";
@@ -10,6 +10,7 @@ import { amountDueNowPaise, type BookingDisplayStatus, bookingReference } from "
 import { BookingStatusBadge } from "./BookingStatusBadge";
 import { HoldTimer } from "./HoldTimer";
 import { ReviewForm } from "./ReviewForm";
+import { UpiPayment } from "./UpiPayment";
 
 // A trekker's booking: what they booked, who's going, and paying for it.
 export async function BookingDetails({ params }: { params: Promise<{ bookingId: string }> }) {
@@ -86,6 +87,31 @@ function PaymentPanel({ booking, status }: { booking: MyBooking; status: Booking
   const dueNow = amountDueNowPaise(batch, booking.num_people, booking.discount_paise);
   const balance = booking.total_paise - booking.paid_paise;
   const bookAgain = `/o/${organizer.slug}/${batch.treks.slug}/book/${booking.batch_id}`;
+  const reference = bookingReference(booking.booking_number);
+  // Newest first. While one waits for the organizer, no other can be sent.
+  const proofSent = booking.payment_proofs.find((p) => p.status === "submitted");
+  const lastProof = booking.payment_proofs[0];
+  const rejectedReason = lastProof?.status === "rejected" ? lastProof.reject_reason : null;
+  const upi = (amountPaise: number) =>
+    organizer.upi_id && (
+      <UpiPayment
+        bookingId={booking.id}
+        reference={reference}
+        upiId={organizer.upi_id}
+        payeeName={organizer.name}
+        amountPaise={amountPaise}
+        maxPaise={balance}
+        rejectedReason={rejectedReason}
+      />
+    );
+  const sentNote = proofSent && (
+    <p className="rounded-lg bg-muted p-3 text-sm">
+      You sent {formatRupees(proofSent.amount_paise)} by UPI (transaction ID {proofSent.utr}) on{" "}
+      {formatDateTime(proofSent.created_at)}. {organizer.name} is checking it
+      {booking.status === "pending" && ", and your seats are held meanwhile"}. We&apos;ll email you once it&apos;s
+      confirmed.
+    </p>
+  );
 
   return (
     <section className="space-y-3 rounded-xl border p-5">
@@ -106,28 +132,36 @@ function PaymentPanel({ booking, status }: { booking: MyBooking; status: Booking
             <span>{dueNow < booking.total_paise ? "Deposit to pay now" : "To pay now"}</span>
             <span>{formatRupees(dueNow)}</span>
           </div>
-          {booking.hold_expires_at && <HoldTimer expiresAt={booking.hold_expires_at} />}
-          <Button size="lg" className="w-full" disabled>
-            Pay {formatRupees(dueNow)}
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            Online payment is being set up and isn&apos;t live yet.
-            {organizer.instagram_handle && (
-              <>
-                {" "}
-                To complete your booking now, message{" "}
-                <a
-                  href={`https://ig.me/m/${organizer.instagram_handle}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-foreground underline underline-offset-4"
-                >
-                  @{organizer.instagram_handle}
-                </a>{" "}
-                with your booking ID.
-              </>
-            )}
-          </p>
+          {!proofSent && booking.hold_expires_at && <HoldTimer expiresAt={booking.hold_expires_at} />}
+          {proofSent ? (
+            sentNote
+          ) : organizer.upi_id ? (
+            upi(dueNow)
+          ) : (
+            <>
+              <Button size="lg" className="w-full" disabled>
+                Pay {formatRupees(dueNow)}
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Online payment is being set up and isn&apos;t live yet.
+                {organizer.instagram_handle && (
+                  <>
+                    {" "}
+                    To complete your booking now, message{" "}
+                    <a
+                      href={`https://ig.me/m/${organizer.instagram_handle}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-foreground underline underline-offset-4"
+                    >
+                      @{organizer.instagram_handle}
+                    </a>{" "}
+                    with your booking ID.
+                  </>
+                )}
+              </p>
+            </>
+          )}
           <ActionButton
             action={cancelBooking}
             fields={{ booking_id: booking.id }}
@@ -139,7 +173,9 @@ function PaymentPanel({ booking, status }: { booking: MyBooking; status: Booking
         </>
       )}
 
-      {status === "expired" && (
+      {status === "expired" && proofSent && <div className="border-t pt-3">{sentNote}</div>}
+
+      {status === "expired" && !proofSent && (
         <div className="space-y-3 border-t pt-3">
           <p className="text-sm text-muted-foreground">
             Your seat hold ran out before payment, so this booking wasn&apos;t completed. If you&apos;ve paid the
@@ -162,6 +198,15 @@ function PaymentPanel({ booking, status }: { booking: MyBooking; status: Booking
               <span>Balance, paid to the organizer</span>
               <span>{formatRupees(balance)}</span>
             </div>
+          )}
+          {balance > 0 && proofSent && sentNote}
+          {balance > 0 && !proofSent && organizer.upi_id && (
+            <details open={!!rejectedReason}>
+              <summary className="cursor-pointer text-sm font-medium underline underline-offset-4">
+                Pay the balance by UPI
+              </summary>
+              {upi(balance)}
+            </details>
           )}
           {/* RLS shows the link only once the booking is confirmed. */}
           {batch.batch_group_links && (

@@ -9,7 +9,13 @@ import { fieldErrors, type FormState } from "@/lib/form-state";
 import { requestOrigin } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
 
-import { emailBookingCancelled, emailBookingConfirmed, emailNewBooking } from "./emails";
+import {
+  emailBookingCancelled,
+  emailBookingConfirmed,
+  emailNewBooking,
+  emailPaymentRejected,
+  emailPaymentToCheck,
+} from "./emails";
 import {
   batchIdSchema,
   bookingFromFormData,
@@ -18,10 +24,13 @@ import {
   couponCheckSchema,
   groupLinkSchema,
   offlinePaymentSchema,
+  paymentProofSchema,
+  reviewProofSchema,
   reviewSchema,
   waitlistEntryIdSchema,
   waitlistSchema,
 } from "./schema";
+import { isPaymentProofPath } from "./upi";
 import { notifyWaitlist } from "./waitlist";
 
 // Messages raised by find_coupon() (through check_coupon() and book_batch())
@@ -291,6 +300,99 @@ export async function submitReview(_prev: FormState, formData: FormData): Promis
     return { error: "Couldn't save your review. Please try again." };
   }
 
+  refresh();
+  return { ok: true };
+}
+
+// Messages raised by submit_payment_proof() that are safe to show as-is.
+const PROOF_ERRORS = [
+  "This booking is not active",
+  "This batch was cancelled",
+  "A payment is already waiting for the organizer to check",
+  "Not enough seats left",
+];
+
+// Trekker says they've paid the organizer by UPI. The screenshot, if any, is
+// already in storage (uploaded from the browser). The database checks the
+// booking is theirs and keeps the seats held while the organizer checks.
+export async function submitPaymentProof(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = paymentProofSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fieldErrors(parsed.error);
+  const { booking_id, amount, utr, screenshot_path } = parsed.data;
+  if (screenshot_path && !isPaymentProofPath(screenshot_path, booking_id)) {
+    return { error: "Couldn't attach the screenshot. Please try again." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("submit_payment_proof", {
+    p_booking_id: booking_id,
+    p_amount_paise: amount,
+    p_utr: utr,
+    p_screenshot_path: screenshot_path ?? undefined,
+  });
+  if (error) {
+    if (error.message.includes("Amount must be")) {
+      return { fieldErrors: { amount: "That's more than what's still due on this booking." } };
+    }
+    const known = PROOF_ERRORS.find((message) => error.message.includes(message));
+    if (known === "Not enough seats left") {
+      return { error: "Your seat hold ran out and the batch is now full. Contact the organizer about your payment." };
+    }
+    if (known) return { error: `${known}.` };
+    console.error("submitPaymentProof failed:", error);
+    return { error: "Couldn't send your payment details. Please try again." };
+  }
+
+  const origin = await requestOrigin();
+  after(() => emailPaymentToCheck(booking_id, amount, utr.toUpperCase(), origin));
+  refresh();
+  return { ok: true };
+}
+
+// Messages raised by review_payment_proof() and record_offline_payment()
+// that are safe to show as-is.
+const PROOF_REVIEW_ERRORS = [
+  "This payment was already checked",
+  "This booking was cancelled",
+  "This batch was cancelled",
+];
+
+// Organizer accepts a UPI payment they found in their bank, which confirms
+// the booking, or rejects it with a reason the trekker is emailed.
+export async function reviewPaymentProof(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = reviewProofSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fieldErrors(parsed.error);
+  const input = parsed.data;
+
+  const supabase = await createClient();
+  const { data: proof } = await supabase
+    .from("payment_proofs")
+    .select("booking_id, bookings!inner(status)")
+    .eq("id", input.proof_id)
+    .maybeSingle();
+  if (!proof) return { error: "Payment not found. Please refresh." };
+
+  const { error } = await supabase.rpc("review_payment_proof", {
+    p_proof_id: input.proof_id,
+    p_accept: input.decision === "accept",
+    p_reason: input.decision === "reject" ? input.reason : undefined,
+  });
+  if (error) {
+    if (error.message.includes("Not enough seats left")) {
+      return { error: "The seat hold ran out and the batch is now full, so this booking can't be confirmed." };
+    }
+    const known = PROOF_REVIEW_ERRORS.find((message) => error.message.includes(message));
+    if (known) return { error: `${known}.` };
+    console.error("reviewPaymentProof failed:", error);
+    return { error: "Couldn't save. Please try again." };
+  }
+
+  const origin = await requestOrigin();
+  if (input.decision === "reject") {
+    after(() => emailPaymentRejected(proof.booking_id, input.reason, origin));
+  } else if (proof.bookings.status !== "confirmed") {
+    after(() => emailBookingConfirmed(proof.booking_id, origin));
+  }
   refresh();
   return { ok: true };
 }

@@ -64,6 +64,11 @@ function BatchSummaryList({ title, batches, empty }: { title: string; batches: B
                     {batch.total_seats} seats left
                   </p>
                   {batch.collectedPaise > 0 && <p>{formatRupees(batch.collectedPaise)} collected</p>}
+                  {batch.paymentsToCheck > 0 && (
+                    <p className="font-medium text-primary">
+                      {batch.paymentsToCheck} UPI {batch.paymentsToCheck === 1 ? "payment" : "payments"} to check
+                    </p>
+                  )}
                 </div>
               </Link>
             </li>

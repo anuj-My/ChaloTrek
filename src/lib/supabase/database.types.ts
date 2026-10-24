@@ -385,6 +385,7 @@ export type Database = {
           phone: string | null
           slug: string
           updated_at: string
+          upi_id: string | null
           verified_at: string | null
         }
         Insert: {
@@ -400,6 +401,7 @@ export type Database = {
           phone?: string | null
           slug: string
           updated_at?: string
+          upi_id?: string | null
           verified_at?: string | null
         }
         Update: {
@@ -415,6 +417,7 @@ export type Database = {
           phone?: string | null
           slug?: string
           updated_at?: string
+          upi_id?: string | null
           verified_at?: string | null
         }
         Relationships: []
@@ -465,6 +468,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "participants_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_proofs: {
+        Row: {
+          amount_paise: number
+          booking_id: string
+          created_at: string
+          id: string
+          reject_reason: string | null
+          reviewed_at: string | null
+          screenshot_path: string | null
+          status: Database["public"]["Enums"]["payment_proof_status"]
+          utr: string
+        }
+        Insert: {
+          amount_paise: number
+          booking_id: string
+          created_at?: string
+          id?: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          screenshot_path?: string | null
+          status?: Database["public"]["Enums"]["payment_proof_status"]
+          utr: string
+        }
+        Update: {
+          amount_paise?: number
+          booking_id?: string
+          created_at?: string
+          id?: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          screenshot_path?: string | null
+          status?: Database["public"]["Enums"]["payment_proof_status"]
+          utr?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_proofs_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
@@ -860,6 +907,7 @@ export type Database = {
       owns_organizer: { Args: { org_id: string }; Returns: boolean }
       owns_trek: { Args: { t_id: string }; Returns: boolean }
       owns_trek_photo_path: { Args: { path: string }; Returns: boolean }
+      payment_proof_booking: { Args: { path: string }; Returns: string }
       record_offline_payment: {
         Args: { p_booking_id: string; p_paid_paise: number }
         Returns: {
@@ -890,6 +938,26 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      review_payment_proof: {
+        Args: { p_accept: boolean; p_proof_id: string; p_reason?: string }
+        Returns: {
+          amount_paise: number
+          booking_id: string
+          created_at: string
+          id: string
+          reject_reason: string | null
+          reviewed_at: string | null
+          screenshot_path: string | null
+          status: Database["public"]["Enums"]["payment_proof_status"]
+          utr: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payment_proofs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       seats_left: {
         Args: { "": Database["public"]["Tables"]["batches"]["Row"] }
         Returns: {
@@ -898,6 +966,31 @@ export type Database = {
       }
       seats_taken: { Args: { b_id: string }; Returns: number }
       trek_is_public: { Args: { t_id: string }; Returns: boolean }
+      submit_payment_proof: {
+        Args: {
+          p_amount_paise: number
+          p_booking_id: string
+          p_screenshot_path?: string
+          p_utr: string
+        }
+        Returns: {
+          amount_paise: number
+          booking_id: string
+          created_at: string
+          id: string
+          reject_reason: string | null
+          reviewed_at: string | null
+          screenshot_path: string | null
+          status: Database["public"]["Enums"]["payment_proof_status"]
+          utr: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payment_proofs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       submit_review: {
         Args: {
           p_author_name: string
@@ -940,6 +1033,7 @@ export type Database = {
       gender: "male" | "female" | "other"
       kyc_status: "pending" | "approved" | "rejected"
       payment_kind: "full" | "deposit" | "balance"
+      payment_proof_status: "submitted" | "accepted" | "rejected"
       payment_status: "created" | "paid" | "failed" | "refunded"
       refund_status: "requested" | "processed" | "failed"
       trek_difficulty: "easy" | "moderate" | "difficult" | "challenging"
@@ -1085,6 +1179,7 @@ export const Constants = {
       gender: ["male", "female", "other"],
       kyc_status: ["pending", "approved", "rejected"],
       payment_kind: ["full", "deposit", "balance"],
+      payment_proof_status: ["submitted", "accepted", "rejected"],
       payment_status: ["created", "paid", "failed", "refunded"],
       refund_status: ["requested", "processed", "failed"],
       trek_difficulty: ["easy", "moderate", "difficult", "challenging"],

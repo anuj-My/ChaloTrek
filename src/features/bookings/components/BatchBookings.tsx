@@ -10,6 +10,7 @@ import { amountDueNowPaise, bookingReference } from "../status";
 import { BookingStatusBadge } from "./BookingStatusBadge";
 import { GroupLinkForm } from "./GroupLinkForm";
 import { OfflinePaymentForm } from "./OfflinePaymentForm";
+import { PaymentProofReview } from "./PaymentProofReview";
 
 // One batch for the organizer: totals, everyone going, and each booking.
 export async function BatchBookings({ params }: { params: Promise<{ batchId: string }> }) {
@@ -20,6 +21,7 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
     active.filter((b) => b.displayStatus === status).reduce((sum, b) => sum + b.num_people, 0);
   const collected = active.filter((b) => b.displayStatus === "confirmed").reduce((sum, b) => sum + b.paid_paise, 0);
   const participants = active.flatMap((booking) => booking.participants.map((p) => ({ ...p, booking })));
+  const toCheck = active.filter((b) => b.proofToCheck).length;
 
   const stats = [
     { label: "Confirmed", value: people("confirmed") },
@@ -57,6 +59,15 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
           </div>
         ))}
       </dl>
+
+      {toCheck > 0 && (
+        <p className="rounded-lg border border-primary/40 bg-primary/5 p-4 text-sm">
+          <span className="font-medium">
+            {toCheck} UPI {toCheck === 1 ? "payment" : "payments"} to check.
+          </span>{" "}
+          Find each transaction ID in your bank or UPI app, then accept it below to confirm the booking.
+        </p>
+      )}
 
       <GroupLinkForm batchId={batch.id} url={batch.batch_group_links?.url ?? null} />
 
@@ -205,6 +216,14 @@ function BookingList({ bookings, batch }: { bookings: OrganizerBooking[]; batch:
                 Cancelled {booking.cancelled_by === "trekker" ? "by the trekker" : "by you"}{" "}
                 {formatDateTime(booking.cancelled_at)}
               </p>
+            )}
+            {booking.proofToCheck && (
+              <div className="pt-2">
+                <PaymentProofReview
+                  proof={booking.proofToCheck}
+                  reference={bookingReference(booking.booking_number)}
+                />
+              </div>
             )}
             <div className="flex flex-wrap items-start gap-2 pt-2 sm:justify-end">
               {canRecordPayment(booking, batch) && (

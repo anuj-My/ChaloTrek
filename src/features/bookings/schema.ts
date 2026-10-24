@@ -103,3 +103,35 @@ export const reviewSchema = z.object({
   body: z.string().trim().max(2000, "At most 2,000 characters"),
   author_name: z.string().trim().min(2, "Enter the name to show").max(50, "At most 50 characters"),
 });
+
+// ─── UPI payment proofs ─────────────────────────────────────────────────────
+
+// Trekker says they've paid the organizer by UPI.
+export const paymentProofSchema = z.object({
+  booking_id: z.uuid(),
+  // Rupees in the form, paise in the database.
+  amount: z.coerce
+    .number<string>("Enter the amount you paid")
+    .int("Whole rupees only")
+    .min(1, "Enter the amount you paid")
+    .transform((rupees) => rupees * 100),
+  utr: z
+    .string()
+    .trim()
+    .transform((s) => s.replace(/\s/g, ""))
+    .pipe(z.string().regex(/^[A-Za-z0-9]{6,35}$/, "Enter the UPI transaction ID (UTR) from your UPI app")),
+  screenshot_path: z
+    .string()
+    .optional()
+    .transform((s) => s || null),
+});
+
+// Organizer accepts or rejects a payment proof.
+export const reviewProofSchema = z.discriminatedUnion("decision", [
+  z.object({ decision: z.literal("accept"), proof_id: z.uuid() }),
+  z.object({
+    decision: z.literal("reject"),
+    proof_id: z.uuid(),
+    reason: z.string().trim().min(5, "Tell the trekker what's wrong").max(300),
+  }),
+]);

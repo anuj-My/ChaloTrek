@@ -27,6 +27,13 @@ export const organizerProfileSchema = z.object({
       .pipe(z.string().regex(/^[A-Za-z0-9._]{1,30}$/, "Enter your handle, like himalayan.hikers")),
   ),
   bio: optional(z.string().trim().max(500, "At most 500 characters")),
+  // Matches the check on organizers.upi_id, e.g. "himalayanhikers@okaxis".
+  upi_id: optional(
+    z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z0-9._-]{2,256}@[A-Za-z][A-Za-z0-9]{1,63}$/, "Enter a UPI ID, like himalayanhikers@okaxis"),
+  ),
 });
 
 export const createOrganizerSchema = organizerProfileSchema.extend({ slug: slugSchema });

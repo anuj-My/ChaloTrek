@@ -108,6 +108,22 @@ export function OrganizerProfileForm({ organizer, defaultEmail }: Props) {
       </FormField>
 
       <FormField
+        label="UPI ID for payments"
+        htmlFor="upi_id"
+        error={errors.upi_id}
+        hint="Optional. Trekkers pay this from the booking page and send you the transaction ID to check."
+      >
+        <Input
+          id="upi_id"
+          name="upi_id"
+          autoComplete="off"
+          defaultValue={organizer?.upi_id ?? ""}
+          placeholder="himalayanhikers@okaxis"
+          aria-invalid={!!errors.upi_id}
+        />
+      </FormField>
+
+      <FormField
         label="About your company"
         htmlFor="bio"
         error={errors.bio}

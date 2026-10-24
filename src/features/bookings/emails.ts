@@ -18,7 +18,7 @@ async function getBookingForEmail(bookingId: string) {
     .select(
       `id, booking_number, batch_id, contact_email, contact_phone, num_people, total_paise, paid_paise, discount_paise,
        batches!inner(start_date, end_date, price_paise, deposit_paise, batch_group_links(url),
-         treks!inner(name, organizers!inner(name, email, phone, instagram_handle, owner_user_id))),
+         treks!inner(name, organizers!inner(name, email, phone, instagram_handle, upi_id, owner_user_id))),
        participants(full_name)`,
     )
     .eq("id", bookingId)
@@ -75,7 +75,9 @@ export function emailNewBooking(bookingId: string, origin: string) {
       heading: `New booking on ${b.trekName}`,
       paragraphs: [
         `${b.participants[0]?.full_name ?? "A trekker"} is holding ${people(b.num_people)} on your ${b.dates} batch. The seats are held for 10 minutes.`,
-        "Online payment isn't live yet, so they may message you to pay. Once you've received the money, mark the booking as paid in your dashboard to confirm it.",
+        b.organizer.upi_id
+          ? `They've been asked to pay your UPI ID (${b.organizer.upi_id}) and send the transaction ID. We'll email you to check it against your bank before the booking is confirmed.`
+          : "Online payment isn't live yet, so they may message you to pay. Once you've received the money, mark the booking as paid in your dashboard to confirm it. Add your UPI ID in Settings so trekkers can pay you straight from the booking page.",
       ],
       rows: [
         ["Booking ID", b.reference],
@@ -93,6 +95,56 @@ export function emailNewBooking(bookingId: string, origin: string) {
       subject: `New booking ${b.reference}: ${b.trekName}, ${b.dates}`,
       replyTo: b.contact_email,
       content,
+    });
+  });
+}
+
+// To the organizer, when a trekker says they've paid by UPI.
+export function emailPaymentToCheck(bookingId: string, amountPaise: number, utr: string, origin: string) {
+  return send(bookingId, "payment to check", async (b) => {
+    const to = await organizerEmail(b.organizer);
+    if (!to) return;
+    await sendEmail({
+      to,
+      subject: `Check payment of ${formatRupees(amountPaise)} for ${b.reference}`,
+      replyTo: b.contact_email,
+      content: {
+        heading: `${formatRupees(amountPaise)} payment to check`,
+        paragraphs: [
+          `${b.participants[0]?.full_name ?? "A trekker"} says they paid ${formatRupees(amountPaise)} by UPI for ${b.trekName} (${b.dates}).`,
+          "Find the transaction ID in your bank or UPI app, then accept the payment in your dashboard. Their seats are held for 24 hours while you check.",
+        ],
+        rows: [
+          ["Booking ID", b.reference],
+          ["Amount", formatRupees(amountPaise)],
+          ["UPI transaction ID", utr],
+          ["People", b.names],
+          ["Contact", `${b.contact_email}
+${b.contact_phone}`],
+        ],
+        buttons: [{ label: "Check payment", url: `${origin}/dashboard/bookings/${b.batch_id}` }],
+      },
+    });
+  });
+}
+
+// To the trekker, when the organizer couldn't find their UPI payment.
+export function emailPaymentRejected(bookingId: string, reason: string, origin: string) {
+  return send(bookingId, "payment rejected", async (b) => {
+    const contact = organizerContact(b.organizer);
+    await sendEmail({
+      to: b.contact_email,
+      subject: `Payment not accepted for ${b.trekName} (${b.reference})`,
+      replyTo: b.organizer.email,
+      content: {
+        heading: "Your payment wasn't accepted",
+        paragraphs: [
+          `${b.organizer.name} couldn't match your UPI payment for ${b.trekName} (${b.dates}). Their note: "${reason}"`,
+          `Send the correct details from your booking page${b.paid_paise === 0 ? " within an hour, before your seats are released" : ""}${contact ? `, or contact them: ${contact}` : ""}.`,
+        ],
+        rows: [["Booking ID", b.reference]],
+        buttons: [{ label: "View booking", url: `${origin}/my-bookings/${b.id}` }],
+      },
     });
   });
 }

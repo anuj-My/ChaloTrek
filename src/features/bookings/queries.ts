@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { requireAdmin, requireUser } from "@/features/auth/queries";
 import { awaitingReview, requireMyOrganizer } from "@/features/organizers/queries";
+import { PAYMENT_PROOFS_BUCKET } from "./upi";
 import { todayInIndia } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
@@ -37,7 +38,7 @@ export async function getBatchForBooking(organizerSlug: string, trekSlug: string
 export type BatchForBooking = NonNullable<Awaited<ReturnType<typeof getBatchForBooking>>>;
 
 const BOOKING_WITH_TREK = `*, batches!inner(start_date, end_date, price_paise, deposit_paise, batch_group_links(url),
-  treks!inner(name, slug, organizers!inner(name, slug, instagram_handle)))`;
+  treks!inner(name, slug, organizers!inner(name, slug, instagram_handle, upi_id)))`;
 
 // Bookings come back with `displayStatus`, worked out here at request time
 // because it depends on the clock (see bookingDisplayStatus).
@@ -51,11 +52,13 @@ export async function getMyBooking(bookingId: string) {
     .from("bookings")
     .select(
       `${BOOKING_WITH_TREK}, participants(full_name, age, gender, created_at),
-       reviews(rating, body, author_name, hidden)`,
+       reviews(rating, body, author_name, hidden),
+       payment_proofs(id, amount_paise, utr, status, reject_reason, created_at)`,
     )
     .eq("id", bookingId)
     .eq("user_id", user.id)
     .order("created_at", { referencedTable: "participants" })
+    .order("created_at", { referencedTable: "payment_proofs", ascending: false })
     .maybeSingle();
   if (error?.code === INVALID_UUID) notFound();
   if (error) throw error;
@@ -95,7 +98,7 @@ export async function listMyBatchBookingSummaries() {
     .select(
       `id, start_date, end_date, total_seats, status, seats_left,
        treks!inner(name, organizer_id),
-       bookings(num_people, status, hold_expires_at, paid_paise)`,
+       bookings(num_people, status, hold_expires_at, paid_paise, payment_proofs(status))`,
     )
     .eq("treks.organizer_id", organizer.id)
     .order("start_date");
@@ -112,6 +115,7 @@ export async function listMyBatchBookingSummaries() {
       confirmedPeople: peopleWith("confirmed"),
       heldPeople: peopleWith("held"),
       collectedPaise: statuses.filter((b) => b.displayStatus === "confirmed").reduce((sum, b) => sum + b.paid_paise, 0),
+      paymentsToCheck: bookings.filter((b) => b.payment_proofs.some((p) => p.status === "submitted")).length,
     };
   });
   return {
@@ -131,25 +135,51 @@ export async function getMyBatchBookings(batchId: string) {
     .select(
       `id, start_date, end_date, total_seats, price_paise, deposit_paise, status, seats_left, batch_group_links(url),
        treks!inner(name, slug, organizer_id),
-       bookings(*, participants(*), coupons(code)),
+       bookings(*, participants(*), coupons(code), payment_proofs(*)),
        waitlist_entries(id, email, num_people, notified_at, created_at)`,
     )
     .eq("id", batchId)
     .eq("treks.organizer_id", organizer.id)
     .order("created_at", { referencedTable: "bookings", ascending: false })
     .order("created_at", { referencedTable: "bookings.participants" })
+    .order("created_at", { referencedTable: "bookings.payment_proofs", ascending: false })
     .order("created_at", { referencedTable: "waitlist_entries" })
     .maybeSingle();
   if (error?.code === INVALID_UUID) notFound();
   if (error) throw error;
   if (!data) notFound();
 
+  // Screenshots are private; signed links let the organizer open them for an hour.
+  const screenshots = data.bookings
+    .flatMap((b) => b.payment_proofs)
+    .filter((p) => p.status === "submitted" && p.screenshot_path)
+    .map((p) => p.screenshot_path!);
+  const screenshotUrls = new Map<string, string>();
+  if (screenshots.length) {
+    const { data: signed, error: signError } = await supabase.storage
+      .from(PAYMENT_PROOFS_BUCKET)
+      .createSignedUrls(screenshots, 60 * 60);
+    if (signError) console.error("Couldn't sign payment screenshots:", signError);
+    for (const item of signed ?? []) if (item.path && item.signedUrl) screenshotUrls.set(item.path, item.signedUrl);
+  }
+
   const now = Date.now();
-  const bookings = data.bookings.map((b) => ({ ...b, displayStatus: bookingDisplayStatus(b, now) }));
+  const bookings = data.bookings.map((b) => {
+    const proof = b.payment_proofs.find((p) => p.status === "submitted");
+    return {
+      ...b,
+      displayStatus: bookingDisplayStatus(b, now),
+      proofToCheck: proof && {
+        ...proof,
+        screenshotUrl: proof.screenshot_path ? (screenshotUrls.get(proof.screenshot_path) ?? null) : null,
+      },
+    };
+  });
   return {
     ...data,
-    activeBookings: bookings.filter((b) => isActive(b.displayStatus)),
-    otherBookings: bookings.filter((b) => !isActive(b.displayStatus)),
+    // A payment to check stays in view even if its seat hold has run out.
+    activeBookings: bookings.filter((b) => isActive(b.displayStatus) || b.proofToCheck),
+    otherBookings: bookings.filter((b) => !isActive(b.displayStatus) && !b.proofToCheck),
   };
 }
 

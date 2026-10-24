@@ -33,8 +33,9 @@ export function Privacy() {
           registration, to verify the business and pay it.
         </li>
         <li>
-          <strong>Payments:</strong> payment amounts and status from our payment partner. We never receive your card,
-          UPI or bank login details.
+          <strong>Payments:</strong> payment amounts and status from our payment partner, and, when you pay an
+          organizer by UPI, the transaction ID and any screenshot you send so they can check it. We never receive your
+          card, UPI PIN or bank login details.
         </li>
         <li>
           <strong>Technical data:</strong> login cookies that keep you signed in, and basic server logs.

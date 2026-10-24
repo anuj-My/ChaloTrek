@@ -65,6 +65,7 @@ async function Overview({ organizer }: { organizer: MyOrganizer }) {
     },
     { done: treks.some((t) => t.status === "published"), label: "Add and publish a trek", href: "/dashboard/treks" },
     { done: upcoming.length > 0, label: "Add a batch with dates, price and seats", href: "/dashboard/batches" },
+    { done: !!organizer.upi_id, label: "Add your UPI ID so trekkers can pay you", href: "/dashboard/settings" },
     { done: hasBooking, label: "Share your page in your Instagram bio and get your first booking", href: `/o/${organizer.slug}` },
   ];
 
@@ -103,8 +104,26 @@ async function Overview({ organizer }: { organizer: MyOrganizer }) {
     { label: "Collected", value: formatRupees(sum("collectedPaise")) },
   ];
 
+  const toCheck = [...upcoming, ...past].filter((b) => b.paymentsToCheck > 0);
+  const toCheckCount = toCheck.reduce((total, b) => total + b.paymentsToCheck, 0);
+
   return (
     <>
+      {toCheckCount > 0 && (
+        <p className="rounded-lg border border-primary/40 bg-primary/5 p-4 text-sm">
+          <span className="font-medium">
+            {toCheckCount} UPI {toCheckCount === 1 ? "payment" : "payments"} to check.
+          </span>{" "}
+          Trekkers are waiting for you to confirm their bookings.{" "}
+          <Link
+            href={toCheck.length === 1 ? `/dashboard/bookings/${toCheck[0].id}` : "/dashboard/bookings"}
+            className="font-medium underline underline-offset-4"
+          >
+            Check {toCheckCount === 1 ? "it" : "them"}
+          </Link>
+        </p>
+      )}
+
       <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label} className="rounded-lg border p-4">
