@@ -198,17 +198,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "bookings_coupon_id_fkey"
-            columns: ["coupon_id"]
-            isOneToOne: false
-            referencedRelation: "coupons"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "bookings_batch_id_fkey"
             columns: ["batch_id"]
             isOneToOne: false
             referencedRelation: "batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
             referencedColumns: ["id"]
           },
         ]
@@ -898,6 +898,37 @@ export type Database = {
           percent_off: number
         }[]
       }
+      coupon_discount: {
+        Args: {
+          c: Database["public"]["Tables"]["coupons"]["Row"]
+          p_num_people: number
+          p_price_paise: number
+        }
+        Returns: number
+      }
+      coupon_uses: { Args: { c_id: string }; Returns: number }
+      find_coupon: {
+        Args: { p_batch_id: string; p_code: string }
+        Returns: {
+          active: boolean
+          amount_off_paise: number | null
+          code: string
+          created_at: string
+          id: string
+          max_uses: number | null
+          organizer_id: string
+          percent_off: number | null
+          trek_id: string | null
+          updated_at: string
+          valid_until: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "coupons"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_confirmed_booking: { Args: { b_id: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_app_user: { Args: never; Returns: boolean }
@@ -965,7 +996,6 @@ export type Database = {
         } & "the function public.seats_left with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache"
       }
       seats_taken: { Args: { b_id: string }; Returns: number }
-      trek_is_public: { Args: { t_id: string }; Returns: boolean }
       submit_payment_proof: {
         Args: {
           p_amount_paise: number
@@ -1018,11 +1048,15 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      trek_is_public: { Args: { t_id: string }; Returns: boolean }
     }
     Enums: {
       batch_status: "open" | "closed" | "cancelled"
       booking_canceller: "organizer" | "trekker"
-      booking_email_kind: "balance_reminder" | "trek_reminder" | "review_request"
+      booking_email_kind:
+        | "balance_reminder"
+        | "trek_reminder"
+        | "review_request"
       booking_source: "organizer_link" | "marketplace"
       booking_status:
         | "pending"
@@ -1167,7 +1201,11 @@ export const Constants = {
     Enums: {
       batch_status: ["open", "closed", "cancelled"],
       booking_canceller: ["organizer", "trekker"],
-      booking_email_kind: ["balance_reminder", "trek_reminder", "review_request"],
+      booking_email_kind: [
+        "balance_reminder",
+        "trek_reminder",
+        "review_request",
+      ],
       booking_source: ["organizer_link", "marketplace"],
       booking_status: [
         "pending",
