@@ -10,7 +10,7 @@ import { fieldErrors, type FormState } from "@/lib/form-state";
 import { requestOrigin } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
 
-import { batchIdSchema, batchSchema, batchStatusSchema } from "./schema";
+import { batchIdSchema, batchSchema, batchStatusSchema, REPEAT_OPTIONS, repeatDates, repeatSchema } from "./schema";
 
 const FOREIGN_KEY_VIOLATION = "23503";
 
@@ -41,23 +41,55 @@ async function ownsTrek(trekId: string) {
   return !!data;
 }
 
+// Adds a batch, or a run of them (every week or two) with the same price
+// and seats. Dates that already have a batch on this trek are skipped.
 export async function createBatch(_prev: FormState, formData: FormData): Promise<FormState> {
-  const parsed = batchSchema.safeParse(Object.fromEntries(formData));
+  const input = Object.fromEntries(formData);
+  const parsed = batchSchema.safeParse(input);
+  const repeat = repeatSchema.safeParse(input);
   if (!parsed.success) return fieldErrors(parsed.error);
+  if (!repeat.success) return fieldErrors(repeat.error);
   if (parsed.data.start_date <= todayInIndia()) {
     return { error: "Please fix the highlighted fields.", fieldErrors: { start_date: "Pick a future date" } };
   }
   if (!(await ownsTrek(parsed.data.trek_id))) return { error: "Trek not found." };
 
+  const days = REPEAT_OPTIONS.find((o) => o.value === repeat.data.repeat)?.days ?? 0;
+  const dates = repeatDates(parsed.data.start_date, parsed.data.end_date, days, repeat.data.repeat_count ?? 1);
+
   const supabase = await createClient();
-  const { error } = await supabase.from("batches").insert(parsed.data);
+  const { data: existing, error: existingError } = await supabase
+    .from("batches")
+    .select("start_date")
+    .eq("trek_id", parsed.data.trek_id)
+    .neq("status", "cancelled")
+    .in(
+      "start_date",
+      dates.map((d) => d.start_date),
+    );
+  if (existingError) {
+    console.error("createBatch lookup failed:", existingError);
+    return { error: "Couldn't add the batch. Please try again." };
+  }
+  const taken = new Set(existing.map((b) => b.start_date));
+  const rows = dates.filter((d) => !taken.has(d.start_date)).map((d) => ({ ...parsed.data, ...d }));
+  if (!rows.length) {
+    return { error: "There's already a batch on this trek starting on that date." };
+  }
+
+  const { error } = await supabase.from("batches").insert(rows);
   if (error) {
     console.error("createBatch failed:", error);
     return { error: "Couldn't add the batch. Please try again." };
   }
 
   refresh();
-  return { ok: true };
+  const skipped = dates.length - rows.length;
+  if (dates.length === 1) return { ok: true, message: "Batch added." };
+  return {
+    ok: true,
+    message: `Added ${rows.length} batches.${skipped ? ` Skipped ${skipped} that already had a batch on that date.` : ""}`,
+  };
 }
 
 export async function updateBatch(_prev: FormState, formData: FormData): Promise<FormState> {

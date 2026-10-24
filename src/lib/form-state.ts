@@ -3,6 +3,8 @@ import type { z } from "zod";
 // What a form's Server Action returns to useActionState.
 export type FormState = {
   ok?: boolean;
+  // Shown instead of the form's usual success text, when it depends on the result.
+  message?: string;
   error?: string;
   fieldErrors?: Record<string, string | undefined>;
 };

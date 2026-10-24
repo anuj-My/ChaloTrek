@@ -9,10 +9,10 @@ export function FormAlert({ state, success }: { state: FormState; success?: stri
       </p>
     );
   }
-  if (state.ok && success) {
+  if (state.ok && (state.message || success)) {
     return (
       <p role="status" className="text-sm text-muted-foreground">
-        {success}
+        {state.message ?? success}
       </p>
     );
   }

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { addDays } from "@/lib/format";
+
 const date = z.iso.date("Pick a date");
 
 // Rupees typed by the organizer → integer paise for the database.
@@ -32,6 +34,34 @@ export const batchSchema = z
     price_paise: price,
     deposit_paise: deposit,
   }));
+
+export const MAX_REPEATS = 12;
+
+// Adding a batch can also add copies of it every week or two, for treks that
+// run the same weekend again and again.
+export const REPEAT_OPTIONS = [
+  { value: "once", label: "Just once", days: 0 },
+  { value: "weekly", label: "Every week", days: 7 },
+  { value: "fortnightly", label: "Every 2 weeks", days: 14 },
+] as const;
+
+export const repeatSchema = z.object({
+  repeat: z.enum(["once", "weekly", "fortnightly"]).default("once"),
+  repeat_count: z.coerce
+    .number<string>()
+    .int()
+    .min(2, "At least 2")
+    .max(MAX_REPEATS, `At most ${MAX_REPEATS}`)
+    .optional(),
+});
+
+// Start and end dates of each batch to add: the first, then every `days`.
+export function repeatDates(start: string, end: string, days: number, count: number) {
+  return Array.from({ length: days ? count : 1 }, (_, i) => ({
+    start_date: addDays(start, i * days),
+    end_date: addDays(end, i * days),
+  }));
+}
 
 export const batchStatusSchema = z.object({
   batch_id: z.uuid(),

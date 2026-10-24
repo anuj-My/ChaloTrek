@@ -87,7 +87,11 @@ export function TrekBatches({ trek }: { trek: MyTrek }) {
 
       <div className="space-y-4 rounded-lg border border-dashed p-4">
         <h3 className="font-medium">Add a batch</h3>
-        <BatchForm trekId={trek.id} durationDays={trek.duration_days} />
+        <BatchForm
+          trekId={trek.id}
+          durationDays={trek.duration_days}
+          templates={trek.batches.filter((b) => b.status !== "cancelled")}
+        />
       </div>
     </section>
   );
