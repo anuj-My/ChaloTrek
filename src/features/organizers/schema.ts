@@ -70,3 +70,8 @@ export function slugify(text: string) {
     .slice(0, 40)
     .replace(/-+$/, "");
 }
+
+export const verifySchema = z.object({
+  organizer_id: z.uuid(),
+  verified: z.enum(["true", "false"]).transform((v) => v === "true"),
+});

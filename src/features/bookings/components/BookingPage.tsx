@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/shared/JsonLd";
 import { RatingSummary, ReviewList } from "@/components/shared/Reviews";
+import { VerifiedBadge } from "@/components/shared/VerifiedBadge";
 import { getTrekReviews } from "@/features/reviews/queries";
 import { getPublicTrek, type PublicTrek } from "@/features/treks/queries";
 import { siteConfig } from "@/lib/site-config";
@@ -35,11 +36,12 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
       {/* Phones: header, batches, details. Desktop: batches in a sticky right column. */}
       <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
         <header className="min-w-0 space-y-3 lg:col-start-1">
-          <p className="text-sm text-muted-foreground">
+          <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
             by{" "}
             <Link href={`/o/${organizer.slug}`} className="underline-offset-4 hover:text-foreground hover:underline">
               {organizer.name}
             </Link>
+            {organizer.verified_at && <VerifiedBadge label />}
           </p>
           <h1 className="type-1">{trek.name}</h1>
           <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">

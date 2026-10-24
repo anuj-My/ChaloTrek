@@ -385,6 +385,7 @@ export type Database = {
           phone: string | null
           slug: string
           updated_at: string
+          verified_at: string | null
         }
         Insert: {
           bio?: string | null
@@ -399,6 +400,7 @@ export type Database = {
           phone?: string | null
           slug: string
           updated_at?: string
+          verified_at?: string | null
         }
         Update: {
           bio?: string | null
@@ -413,6 +415,7 @@ export type Database = {
           phone?: string | null
           slug?: string
           updated_at?: string
+          verified_at?: string | null
         }
         Relationships: []
       }

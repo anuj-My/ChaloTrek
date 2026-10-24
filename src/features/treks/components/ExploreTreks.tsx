@@ -152,7 +152,7 @@ export async function ExploreTreks({ searchParams }: { searchParams: SearchParam
                 <TrekCard
                   trek={trek}
                   href={`/o/${trek.organizers.slug}/${trek.slug}`}
-                  organizerName={trek.organizers.name}
+                  organizer={trek.organizers}
                 />
               </li>
             ))}

@@ -7,7 +7,7 @@ import { fieldErrors, type FormState } from "@/lib/form-state";
 import { createClient } from "@/lib/supabase/server";
 
 import { getMyOrganizer } from "./queries";
-import { createOrganizerSchema, kycSchema, organizerProfileSchema, reviewSchema } from "./schema";
+import { createOrganizerSchema, kycSchema, organizerProfileSchema, reviewSchema, verifySchema } from "./schema";
 
 const UNIQUE_VIOLATION = "23505";
 
@@ -115,6 +115,40 @@ export async function reviewOrganizer(_prev: FormState, formData: FormData): Pro
   if (error) {
     console.error("reviewOrganizer failed:", error);
     return { error: "Couldn't save the review." };
+  }
+
+  refresh();
+  return { ok: true };
+}
+
+// The "Verified organizer" badge: an admin has checked the state
+// adventure-tourism registration on file. Only approved organizers with a
+// registration number qualify; the database clears it if approval is withdrawn.
+export async function setOrganizerVerified(_prev: FormState, formData: FormData): Promise<FormState> {
+  await requireAdmin();
+
+  const parsed = verifySchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Invalid request." };
+  const { organizer_id, verified } = parsed.data;
+
+  const supabase = await createClient();
+  if (verified) {
+    const { data } = await supabase
+      .from("organizers")
+      .select("kyc_status, organizer_kyc(tourism_reg_no)")
+      .eq("id", organizer_id)
+      .maybeSingle();
+    if (data?.kyc_status !== "approved") return { error: "Approve this organizer first." };
+    if (!data.organizer_kyc?.tourism_reg_no) return { error: "No tourism registration number on file." };
+  }
+
+  const { error } = await supabase
+    .from("organizers")
+    .update({ verified_at: verified ? new Date().toISOString() : null })
+    .eq("id", organizer_id);
+  if (error) {
+    console.error("setOrganizerVerified failed:", error);
+    return { error: "Couldn't update verification." };
   }
 
   refresh();

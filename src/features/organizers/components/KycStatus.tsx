@@ -22,7 +22,9 @@ export function KycStatusBanner({ organizer }: { organizer: MyOrganizer }) {
   let body: React.ReactNode;
   if (organizer.kyc_status === "approved") {
     title = "You're approved";
-    body = "Your treks can now take bookings once you publish them.";
+    body = organizer.verified_at
+      ? "Your treks can take bookings once you publish them, and trekkers see a Verified organizer badge on your pages."
+      : "Your treks can now take bookings once you publish them.";
   } else if (organizer.kyc_status === "rejected" && !inReview) {
     title = "Some details need fixing";
     body = kyc?.review_notes ?? "Please check your KYC details and resubmit.";

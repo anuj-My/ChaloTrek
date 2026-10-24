@@ -25,7 +25,7 @@ export async function UpcomingTreks() {
               <TrekCard
                 trek={trek}
                 href={`/o/${trek.organizers.slug}/${trek.slug}`}
-                organizerName={trek.organizers.name}
+                organizer={trek.organizers}
               />
             </li>
           ))}

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/shared/JsonLd";
 import { RatingSummary, ReviewList } from "@/components/shared/Reviews";
 import { TrekCard } from "@/components/shared/TrekCard";
+import { VERIFIED_MEANING, VerifiedBadge } from "@/components/shared/VerifiedBadge";
 import { getOrganizerReviews } from "@/features/reviews/queries";
 import { getPublicOrganizerTreks } from "@/features/treks/queries";
 import { siteConfig } from "@/lib/site-config";
@@ -36,6 +37,12 @@ export async function OrganizerPage({ params }: { params: Promise<{ organizer: s
       />
       <header className="max-w-2xl space-y-3">
         <h1 className="type-1">{organizer.name}</h1>
+        {organizer.verified_at && (
+          <div className="space-y-0.5">
+            <VerifiedBadge label />
+            <p className="text-sm text-muted-foreground">{VERIFIED_MEANING}</p>
+          </div>
+        )}
         <RatingSummary average={reviews.average} count={reviews.count} />
         {organizer.bio && <p className="lead max-w-2xl whitespace-pre-line">{organizer.bio}</p>}
         {organizer.instagram_handle && (

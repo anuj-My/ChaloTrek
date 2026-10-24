@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/shared/JsonLd";
 import { Stars } from "@/components/shared/Stars";
+import { VerifiedBadge } from "@/components/shared/VerifiedBadge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { getTrekRatings } from "@/features/reviews/queries";
@@ -92,7 +93,10 @@ export async function DestinationPage({ params }: { params: Promise<{ destinatio
                       </div>
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="font-medium">{trek.organizers.name}</p>
+                          <p className="flex items-center gap-1.5 font-medium">
+                            {trek.organizers.name}
+                            {trek.organizers.verified_at && <VerifiedBadge label />}
+                          </p>
                           {trek.fromPricePaise !== null ? (
                             <p className="text-sm">
                               <span className="text-muted-foreground">from </span>
@@ -153,6 +157,7 @@ export async function DestinationPage({ params }: { params: Promise<{ destinatio
                             <Link href={trekPath} className="underline-offset-4 hover:underline">
                               {batch.trek.organizers.name}
                             </Link>
+                            {batch.trek.organizers.verified_at && <VerifiedBadge className="ml-1" />}
                           </td>
                           <td className="p-3 whitespace-nowrap">{formatRupees(batch.price_paise)}</td>
                           <td className={seats <= 5 ? "p-3 font-medium text-destructive" : "p-3"}>{seats}</td>

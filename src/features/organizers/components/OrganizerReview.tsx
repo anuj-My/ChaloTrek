@@ -1,3 +1,7 @@
+import { ActionButton } from "@/components/shared/ActionButton";
+import { VerifiedBadge } from "@/components/shared/VerifiedBadge";
+
+import { setOrganizerVerified } from "../actions";
 import { awaitingReview, listOrganizersForReview } from "../queries";
 import { KycBadge } from "./KycStatus";
 import { ReviewForm } from "./ReviewForm";
@@ -30,6 +34,7 @@ export async function OrganizerReview() {
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="font-medium">{organizer.name}</h2>
                 <KycBadge organizer={organizer} />
+                {organizer.verified_at && <VerifiedBadge label />}
                 <span className="text-sm text-muted-foreground">/o/{organizer.slug}</span>
               </div>
 
@@ -50,6 +55,39 @@ export async function OrganizerReview() {
               </dl>
 
               <ReviewForm organizerId={organizer.id} canApprove={!!kyc?.submitted_at} />
+
+              {organizer.kyc_status === "approved" && (
+                <div className="flex flex-wrap items-center gap-3 border-t pt-4 text-sm">
+                  {organizer.verified_at ? (
+                    <>
+                      <span className="text-muted-foreground">
+                        Tourism registration verified on {dateFormat.format(new Date(organizer.verified_at))}
+                      </span>
+                      <ActionButton
+                        action={setOrganizerVerified}
+                        fields={{ organizer_id: organizer.id, verified: "false" }}
+                        variant="ghost"
+                        confirm={`Remove the verified badge from ${organizer.name}?`}
+                      >
+                        Remove badge
+                      </ActionButton>
+                    </>
+                  ) : kyc?.tourism_reg_no ? (
+                    <>
+                      <span className="text-muted-foreground">
+                        Checked {kyc.tourism_reg_no} with the state tourism department?
+                      </span>
+                      <ActionButton action={setOrganizerVerified} fields={{ organizer_id: organizer.id, verified: "true" }}>
+                        Mark as verified
+                      </ActionButton>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      No tourism registration number, so this organizer can&apos;t get the verified badge.
+                    </span>
+                  )}
+                </div>
+              )}
             </li>
           );
         })}

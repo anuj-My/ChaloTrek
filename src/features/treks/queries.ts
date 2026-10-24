@@ -66,7 +66,7 @@ export const getPublicTrek = cache(async (organizerSlug: string, trekSlug: strin
     .select(
       `id, name, slug, region, difficulty, duration_days, max_altitude_m, summary,
        itinerary, inclusions, exclusions, photos,
-       organizers!inner(name, slug, bio, instagram_handle),
+       organizers!inner(name, slug, bio, instagram_handle, verified_at),
        cancellation_policies(name, description),
        destinations(name, slug),
        batches(id, start_date, end_date, price_paise, deposit_paise, total_seats, status, seats_left)`,
@@ -129,7 +129,7 @@ export const getPublicOrganizerTreks = cache(async (organizerSlug: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("organizers")
-    .select(`name, slug, bio, instagram_handle, treks(${TREK_CARD_FIELDS})`)
+    .select(`name, slug, bio, instagram_handle, verified_at, treks(${TREK_CARD_FIELDS})`)
     .eq("slug", organizerSlug)
     .eq("kyc_status", "approved")
     // The owner can read their drafts through RLS, so filter explicitly.
@@ -150,7 +150,7 @@ export async function listUpcomingPublicTreks(limit: number) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("treks")
-    .select(`${TREK_CARD_FIELDS}, organizers!inner(name, slug)`)
+    .select(`${TREK_CARD_FIELDS}, organizers!inner(name, slug, verified_at)`)
     .eq("status", "published")
     .eq("organizers.kyc_status", "approved")
     .gt("batches.start_date", todayInIndia())
@@ -174,7 +174,7 @@ export async function listPublicTreks(destinationId?: string) {
   const supabase = await createClient();
   let query = supabase
     .from("treks")
-    .select(`${TREK_CARD_FIELDS}, organizers!inner(name, slug)`)
+    .select(`${TREK_CARD_FIELDS}, organizers!inner(name, slug, verified_at)`)
     .eq("status", "published")
     .eq("organizers.kyc_status", "approved")
     .gt("batches.start_date", todayInIndia())

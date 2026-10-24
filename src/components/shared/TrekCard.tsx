@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import { formatDateRange, formatRupees } from "@/lib/format";
 
+import { VerifiedBadge } from "./VerifiedBadge";
+
 export type TrekCardData = {
   name: string;
   region: string;
@@ -16,8 +18,16 @@ export type TrekCardData = {
 };
 
 // A trek in a grid: cover photo, starting price, key facts and next batch.
-// `organizerName` is shown where treks from several organizers are mixed.
-export function TrekCard({ trek, href, organizerName }: { trek: TrekCardData; href: string; organizerName?: string }) {
+// `organizer` is shown where treks from several organizers are mixed.
+export function TrekCard({
+  trek,
+  href,
+  organizer,
+}: {
+  trek: TrekCardData;
+  href: string;
+  organizer?: { name: string; verified_at: string | null };
+}) {
   const facts = [
     trek.region,
     `${trek.duration_days} ${trek.duration_days === 1 ? "day" : "days"}`,
@@ -48,7 +58,12 @@ export function TrekCard({ trek, href, organizerName }: { trek: TrekCardData; hr
             </p>
           )}
         </div>
-        {organizerName && <p className="text-sm text-muted-foreground">by {organizerName}</p>}
+        {organizer && (
+          <p className="flex items-center gap-1 text-sm text-muted-foreground">
+            by {organizer.name}
+            {organizer.verified_at && <VerifiedBadge />}
+          </p>
+        )}
         <p className="text-sm text-muted-foreground">
           {facts.join(" · ")} · <span className="capitalize">{trek.difficulty}</span>
         </p>
