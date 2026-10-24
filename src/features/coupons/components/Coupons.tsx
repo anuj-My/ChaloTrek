@@ -15,7 +15,7 @@ export async function Coupons() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="font-heading text-2xl font-semibold">Coupons</h1>
+        <h1 className="type-2">Coupons</h1>
         <p className="text-muted-foreground">
           Share a code in your Instagram posts or stories. Trekkers enter it when booking, and the discount comes off
           the balance, so the deposit stays the same.
@@ -23,13 +23,13 @@ export async function Coupons() {
       </div>
 
       <section className="space-y-4 rounded-xl border p-5">
-        <h2 className="font-heading text-lg font-semibold">New coupon</h2>
+        <h2 className="type-4">New coupon</h2>
         <CouponForm treks={treks.map(({ id, name }) => ({ id, name }))} />
       </section>
 
       {coupons.length > 0 && (
         <section className="space-y-3">
-          <h2 className="font-heading text-lg font-semibold">Your coupons</h2>
+          <h2 className="type-4">Your coupons</h2>
           <ul className="divide-y rounded-lg border">
             {coupons.map((coupon) => (
               <li

@@ -33,7 +33,7 @@ export async function BookBatch({ params }: { params: Params }) {
         <Link href={trekPath} className="text-sm text-muted-foreground hover:text-foreground">
           ← {trek.name}
         </Link>
-        <h1 className="font-heading text-2xl font-semibold">Book {trek.name}</h1>
+        <h1 className="type-2">Book {trek.name}</h1>
         <p className="text-muted-foreground">
           {formatDateRange(batch.start_date, batch.end_date)} · by {trek.organizers.name} ·{" "}
           {formatRupees(batch.price_paise)} per person

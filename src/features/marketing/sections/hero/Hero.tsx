@@ -23,10 +23,10 @@ export function Hero() {
         <p className="text-xs font-medium tracking-[0.25em] text-secondary uppercase">
           Verified organizers · Live seats
         </p>
-        <h1 className="mt-4 max-w-3xl font-heading text-5xl leading-[1.05] font-medium tracking-tight text-white md:text-7xl">
-          Walk quietly into the high mountains.
+        <h1 className="mt-4 max-w-3xl type-display text-white">
+          Walk quietly into <em className="text-cta-glow">the high mountains.</em>
         </h1>
-        <p className="mt-6 max-w-lg text-lg text-white/75">
+        <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/80">
           Pick a trek, choose a batch that fits your calendar, and book online with real dates,
           prices and seats left.
         </p>

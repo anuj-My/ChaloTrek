@@ -35,9 +35,9 @@ export async function OrganizerPage({ params }: { params: Promise<{ organizer: s
         }}
       />
       <header className="max-w-2xl space-y-3">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">{organizer.name}</h1>
+        <h1 className="type-1">{organizer.name}</h1>
         <RatingSummary average={reviews.average} count={reviews.count} />
-        {organizer.bio && <p className="text-lg whitespace-pre-line text-muted-foreground">{organizer.bio}</p>}
+        {organizer.bio && <p className="lead max-w-2xl whitespace-pre-line">{organizer.bio}</p>}
         {organizer.instagram_handle && (
           <a
             href={`https://instagram.com/${organizer.instagram_handle}`}
@@ -51,7 +51,7 @@ export async function OrganizerPage({ params }: { params: Promise<{ organizer: s
       </header>
 
       <section className="space-y-4">
-        <h2 className="font-heading text-xl font-semibold">Treks</h2>
+        <h2 className="type-3">Treks</h2>
         {organizer.treks.length === 0 ? (
           <div className="rounded-lg border border-dashed p-8 text-center">
             <p className="font-medium">No treks listed yet</p>
@@ -71,7 +71,7 @@ export async function OrganizerPage({ params }: { params: Promise<{ organizer: s
       {reviews.count > 0 && (
         <section className="max-w-3xl space-y-4">
           <div className="space-y-1">
-            <h2 className="font-heading text-xl font-semibold">Reviews</h2>
+            <h2 className="type-3">Reviews</h2>
             <p className="text-sm text-muted-foreground">From trekkers who booked and went with {organizer.name}.</p>
           </div>
           <ReviewList reviews={reviews.reviews} />

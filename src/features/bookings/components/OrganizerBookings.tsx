@@ -11,7 +11,7 @@ export async function OrganizerBookings() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="font-heading text-2xl font-semibold">Bookings</h1>
+        <h1 className="type-2">Bookings</h1>
         <p className="text-muted-foreground">Open a batch to see who&apos;s going and download the list.</p>
       </div>
 
@@ -39,7 +39,7 @@ export async function OrganizerBookings() {
 function BatchSummaryList({ title, batches, empty }: { title: string; batches: BatchBookingSummary[]; empty?: string }) {
   return (
     <section className="space-y-3">
-      <h2 className="font-heading text-lg font-semibold">{title}</h2>
+      <h2 className="type-4">{title}</h2>
       {batches.length === 0 ? (
         <p className="text-sm text-muted-foreground">{empty}</p>
       ) : (

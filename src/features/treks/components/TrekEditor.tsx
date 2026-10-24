@@ -22,7 +22,7 @@ export async function TrekEditor({ params }: { params: Promise<{ trekId: string 
         <Link href="/dashboard/treks" className="text-sm text-muted-foreground hover:text-foreground">
           ← Treks
         </Link>
-        <h1 className="font-heading text-2xl font-semibold">{trek.name}</h1>
+        <h1 className="type-2">{trek.name}</h1>
         <Link
           href={`/o/${organizer.slug}/${trek.slug}`}
           target="_blank"
@@ -37,7 +37,7 @@ export async function TrekEditor({ params }: { params: Promise<{ trekId: string 
       <TrekPhotos organizerId={organizer.id} trekId={trek.id} photos={trek.photos} />
 
       <section className="space-y-4">
-        <h2 className="font-heading text-lg font-semibold">Trek details</h2>
+        <h2 className="type-4">Trek details</h2>
         <TrekForm trek={trek} organizerSlug={organizer.slug} policies={policies} destinations={destinations} />
       </section>
     </div>

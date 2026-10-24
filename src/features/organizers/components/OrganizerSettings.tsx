@@ -9,17 +9,17 @@ export async function OrganizerSettings() {
 
   return (
     <div className="max-w-xl space-y-10">
-      <h1 className="font-heading text-2xl font-semibold">Settings</h1>
+      <h1 className="type-2">Settings</h1>
 
       <section className="space-y-4">
-        <h2 className="font-heading text-lg font-semibold">Company profile</h2>
+        <h2 className="type-4">Company profile</h2>
         <OrganizerProfileForm organizer={organizer} />
       </section>
 
       <section id="kyc" className="scroll-mt-8 space-y-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h2 className="font-heading text-lg font-semibold">KYC</h2>
+            <h2 className="type-4">KYC</h2>
             <KycBadge organizer={organizer} />
           </div>
           <p className="text-sm text-muted-foreground">

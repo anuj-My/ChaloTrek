@@ -15,7 +15,7 @@ export async function AdminBookings() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="font-heading text-2xl font-semibold">All bookings</h1>
+        <h1 className="type-2">All bookings</h1>
         <p className="text-muted-foreground">
           {bookings.length === LIMIT ? `The latest ${LIMIT} bookings.` : `${bookings.length} bookings.`} Search with
           your browser (Ctrl+F) by booking ID, email or phone.

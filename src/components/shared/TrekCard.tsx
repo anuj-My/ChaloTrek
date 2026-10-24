@@ -40,11 +40,11 @@ export function TrekCard({ trek, href, organizerName }: { trek: TrekCardData; hr
       </div>
       <div className="space-y-1">
         <div className="flex items-baseline justify-between gap-2">
-          <h3 className="font-medium group-hover:underline">{trek.name}</h3>
+          <h3 className="type-4 group-hover:underline group-hover:underline-offset-4">{trek.name}</h3>
           {trek.fromPricePaise !== null && (
             <p className="shrink-0 text-sm">
               <span className="text-muted-foreground">from </span>
-              <span className="font-medium">{formatRupees(trek.fromPricePaise)}</span>
+              <span className="font-medium tabular-nums">{formatRupees(trek.fromPricePaise)}</span>
             </p>
           )}
         </div>

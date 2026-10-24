@@ -38,7 +38,7 @@ export async function AdminOverview() {
 
   return (
     <div className="space-y-8">
-      <h1 className="font-heading text-2xl font-semibold">Overview</h1>
+      <h1 className="type-2">Overview</h1>
 
       {stats.organizers.awaitingReview > 0 && (
         <Link
@@ -52,12 +52,12 @@ export async function AdminOverview() {
 
       {groups.map((group) => (
         <section key={group.title} className="space-y-3">
-          <h2 className="font-heading text-lg font-semibold">{group.title}</h2>
+          <h2 className="type-4">{group.title}</h2>
           <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {group.items.map((item) => (
               <div key={item.label} className="rounded-lg border p-4">
                 <dt className="text-sm text-muted-foreground">{item.label}</dt>
-                <dd className="mt-1 text-xl font-semibold">{item.value}</dd>
+                <dd className="mt-1 font-heading text-2xl tabular-nums">{item.value}</dd>
               </div>
             ))}
           </dl>

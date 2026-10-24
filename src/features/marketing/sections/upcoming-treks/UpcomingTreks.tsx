@@ -11,7 +11,7 @@ export async function UpcomingTreks() {
   return (
     <section id="treks" className="mx-auto max-w-6xl scroll-mt-8 space-y-6 px-4 pt-16 pb-24">
       <div className="flex items-baseline justify-between gap-4">
-        <h2 className="font-heading text-2xl font-semibold">Upcoming treks</h2>
+        <h2 className="type-1">Upcoming treks</h2>
         <Link href="/treks" className="text-sm underline underline-offset-4">
           Explore all treks
         </Link>

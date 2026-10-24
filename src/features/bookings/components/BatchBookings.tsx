@@ -35,7 +35,7 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
           <Link href="/dashboard/bookings" className="text-sm text-muted-foreground hover:text-foreground">
             ← Bookings
           </Link>
-          <h1 className="font-heading text-2xl font-semibold">{batch.treks.name}</h1>
+          <h1 className="type-2">{batch.treks.name}</h1>
           <p className="text-muted-foreground">
             {formatDateRange(batch.start_date, batch.end_date)}
             {batch.status !== "open" && ` · ${batch.status === "closed" ? "Closed" : "Cancelled"}`}
@@ -53,7 +53,7 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
         {stats.map((stat) => (
           <div key={stat.label} className="rounded-lg border p-4">
             <dt className="text-sm text-muted-foreground">{stat.label}</dt>
-            <dd className="mt-1 text-xl font-semibold">{stat.value}</dd>
+            <dd className="mt-1 font-heading text-2xl tabular-nums">{stat.value}</dd>
           </div>
         ))}
       </dl>
@@ -70,7 +70,7 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
       ) : (
         <>
           <section className="space-y-3">
-            <h2 className="font-heading text-lg font-semibold">Participants ({participants.length})</h2>
+            <h2 className="type-4">Participants ({participants.length})</h2>
             <div className="overflow-x-auto rounded-lg border">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50 text-left text-muted-foreground">
@@ -108,7 +108,7 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
           </section>
 
           <section className="space-y-3">
-            <h2 className="font-heading text-lg font-semibold">Bookings ({active.length})</h2>
+            <h2 className="type-4">Bookings ({active.length})</h2>
             <BookingList bookings={active} batch={batch} />
           </section>
         </>
@@ -117,7 +117,7 @@ export async function BatchBookings({ params }: { params: Promise<{ batchId: str
       {batch.waitlist_entries.length > 0 && (
         <section className="space-y-3">
           <div>
-            <h2 className="font-heading text-lg font-semibold">
+            <h2 className="type-4">
               Waitlist ({batch.waitlist_entries.reduce((sum, e) => sum + e.num_people, 0)} people)
             </h2>
             <p className="text-sm text-muted-foreground">

@@ -12,7 +12,7 @@ export function TrekBatches({ trek }: { trek: MyTrek }) {
   return (
     <section className="space-y-4">
       <div className="space-y-1">
-        <h2 className="font-heading text-lg font-semibold">Batches</h2>
+        <h2 className="type-4">Batches</h2>
         <p className="text-sm text-muted-foreground">
           Each batch is one departure, with its own dates, price and seats.
         </p>

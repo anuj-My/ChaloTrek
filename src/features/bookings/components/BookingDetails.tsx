@@ -26,7 +26,7 @@ export async function BookingDetails({ params }: { params: Promise<{ bookingId: 
           ← My bookings
         </Link>
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="font-heading text-2xl font-semibold">{trek.name}</h1>
+          <h1 className="type-2">{trek.name}</h1>
           <BookingStatusBadge status={status} />
         </div>
         <p className="text-muted-foreground">
@@ -40,7 +40,7 @@ export async function BookingDetails({ params }: { params: Promise<{ bookingId: 
       {status === "confirmed" && batch.end_date < todayInIndia() && (
         <section className="space-y-4 rounded-xl border p-5">
           <div className="space-y-1">
-            <h2 className="font-heading text-lg font-semibold">
+            <h2 className="type-4">
               {booking.reviews ? "Your review" : "How was the trek?"}
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -59,7 +59,7 @@ export async function BookingDetails({ params }: { params: Promise<{ bookingId: 
       )}
 
       <section className="space-y-3">
-        <h2 className="font-heading text-lg font-semibold">
+        <h2 className="type-4">
           {booking.num_people} {booking.num_people === 1 ? "person" : "people"}
         </h2>
         <ul className="divide-y rounded-lg border">

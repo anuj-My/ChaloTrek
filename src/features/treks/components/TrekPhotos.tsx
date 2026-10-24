@@ -64,7 +64,7 @@ export function TrekPhotos({ organizerId, trekId, photos }: Props) {
   return (
     <section className="space-y-4">
       <div className="space-y-1">
-        <h2 className="font-heading text-lg font-semibold">Photos</h2>
+        <h2 className="type-4">Photos</h2>
         <p className="text-sm text-muted-foreground">
           The first photo is the cover. Up to {MAX_TREK_PHOTOS} photos; they&apos;re resized for fast loading.
         </p>

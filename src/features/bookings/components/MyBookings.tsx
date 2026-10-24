@@ -12,7 +12,7 @@ export async function MyBookings() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-heading text-2xl font-semibold">My bookings</h1>
+      <h1 className="type-2">My bookings</h1>
 
       {bookings.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center">

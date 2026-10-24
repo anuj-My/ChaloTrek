@@ -18,7 +18,7 @@ export async function DashboardHome() {
     return (
       <div className="max-w-xl space-y-6">
         <div className="space-y-1">
-          <h1 className="font-heading text-2xl font-semibold">Set up your organizer profile</h1>
+          <h1 className="type-2">Set up your organizer profile</h1>
           <p className="text-muted-foreground">
             This is what trekkers see on your booking pages. It takes a minute.
           </p>
@@ -31,7 +31,7 @@ export async function DashboardHome() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="font-heading text-2xl font-semibold">{organizer.name}</h1>
+        <h1 className="type-2">{organizer.name}</h1>
         <p className="text-sm text-muted-foreground">
           Your page, for your Instagram bio:{" "}
           <Link
@@ -71,7 +71,7 @@ async function Overview({ organizer }: { organizer: MyOrganizer }) {
   if (!hasBooking) {
     return (
       <section className="space-y-3 rounded-xl border p-5">
-        <h2 className="font-heading text-lg font-semibold">Get your first booking</h2>
+        <h2 className="type-4">Get your first booking</h2>
         <ol className="space-y-2">
           {steps.map((step) => (
             <li key={step.label} className="flex items-center gap-2 text-sm">
@@ -109,7 +109,7 @@ async function Overview({ organizer }: { organizer: MyOrganizer }) {
         {stats.map((stat) => (
           <div key={stat.label} className="rounded-lg border p-4">
             <dt className="text-sm text-muted-foreground">{stat.label}</dt>
-            <dd className="mt-1 text-xl font-semibold">{stat.value}</dd>
+            <dd className="mt-1 font-heading text-2xl tabular-nums">{stat.value}</dd>
           </div>
         ))}
       </dl>
@@ -117,7 +117,7 @@ async function Overview({ organizer }: { organizer: MyOrganizer }) {
       {upcoming.length > 0 && (
         <section className="space-y-3">
           <div className="flex items-baseline justify-between">
-            <h2 className="font-heading text-lg font-semibold">Next batches</h2>
+            <h2 className="type-4">Next batches</h2>
             <Link href="/dashboard/bookings" className="text-sm underline underline-offset-4">
               All bookings
             </Link>

@@ -15,7 +15,7 @@ export async function AdminReviews() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="font-heading text-2xl font-semibold">Reviews</h1>
+        <h1 className="type-2">Reviews</h1>
         <p className="text-muted-foreground">
           Hide reviews that are abusive, fake or not about the trek. Hidden reviews stay visible to their author and
           the organizer.

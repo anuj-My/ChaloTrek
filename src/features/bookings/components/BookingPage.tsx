@@ -41,7 +41,7 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
               {organizer.name}
             </Link>
           </p>
-          <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">{trek.name}</h1>
+          <h1 className="type-1">{trek.name}</h1>
           <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
             {facts.map((fact, i) => (
               <li key={i}>{fact}</li>
@@ -65,7 +65,7 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
         <div className="min-w-0 space-y-10 lg:col-start-1">
           {trek.itinerary.length > 0 && (
             <section className="space-y-4">
-              <h2 className="font-heading text-xl font-semibold">Itinerary</h2>
+              <h2 className="type-3">Itinerary</h2>
               <ol className="space-y-4">
                 {trek.itinerary.map((day, i) => (
                   <li key={i} className="grid grid-cols-[4rem_1fr] gap-2">
@@ -91,7 +91,7 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
 
           {trek.cancellation_policies && (
             <section className="space-y-2">
-              <h2 className="font-heading text-xl font-semibold">Cancellation policy</h2>
+              <h2 className="type-3">Cancellation policy</h2>
               <p>
                 <span className="font-medium">{trek.cancellation_policies.name}:</span>{" "}
                 {trek.cancellation_policies.description}
@@ -102,7 +102,7 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
           {reviews.count > 0 && (
             <section className="space-y-4">
               <div className="space-y-1">
-                <h2 className="font-heading text-xl font-semibold">Reviews</h2>
+                <h2 className="type-3">Reviews</h2>
                 <p className="text-sm text-muted-foreground">Only trekkers who booked and went on this trek can review it.</p>
               </div>
               <ReviewList reviews={reviews.reviews} />
@@ -110,7 +110,7 @@ export async function BookingPage({ params }: { params: Promise<{ organizer: str
           )}
 
           <section className="space-y-2">
-            <h2 className="font-heading text-xl font-semibold">About {organizer.name}</h2>
+            <h2 className="type-3">About {organizer.name}</h2>
             {organizer.bio && <p className="whitespace-pre-line text-muted-foreground">{organizer.bio}</p>}
             {organizer.instagram_handle && (
               <a
@@ -176,7 +176,7 @@ function ItemList({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
     <div className="space-y-3">
-      <h2 className="font-heading text-xl font-semibold">{title}</h2>
+      <h2 className="type-3">{title}</h2>
       <ul className="list-disc space-y-1 pl-5 text-sm">
         {items.map((item, i) => (
           <li key={i}>{item}</li>

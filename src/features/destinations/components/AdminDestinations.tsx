@@ -13,7 +13,7 @@ export async function AdminDestinations() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="font-heading text-2xl font-semibold">Destinations</h1>
+        <h1 className="type-2">Destinations</h1>
         <p className="text-muted-foreground">
           Organizers pick one of these for each trek, which lists it on the trek&apos;s comparison page. Add a short
           description to help those pages rank in search.
@@ -21,7 +21,7 @@ export async function AdminDestinations() {
       </div>
 
       <section className="space-y-4 rounded-xl border p-5">
-        <h2 className="font-heading text-lg font-semibold">Add a trek</h2>
+        <h2 className="type-4">Add a trek</h2>
         <DestinationForm />
       </section>
 

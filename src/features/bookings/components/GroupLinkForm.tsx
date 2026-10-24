@@ -16,7 +16,7 @@ export function GroupLinkForm({ batchId, url }: { batchId: string; url: string |
   return (
     <section className="space-y-3 rounded-xl border p-5">
       <div>
-        <h2 className="font-heading text-lg font-semibold">WhatsApp group</h2>
+        <h2 className="type-4">WhatsApp group</h2>
         <p className="text-sm text-muted-foreground">
           Paste the group&apos;s invite link (in WhatsApp: group info → Invite via link). Trekkers see a Join button on
           their booking and in their confirmation email once their booking is confirmed.

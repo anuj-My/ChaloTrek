@@ -48,8 +48,8 @@ export async function DestinationPage({ params }: { params: Promise<{ destinatio
         <Link href="/treks" className="text-sm text-muted-foreground hover:text-foreground">
           ← All treks
         </Link>
-        <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">{destination.name} trek</h1>
-        <p className="text-lg text-muted-foreground">
+        <h1 className="type-1">{destination.name} trek</h1>
+        <p className="lead">
           {destination.region} ·{" "}
           {organizerCount === 0
             ? "No organizers listed yet"
@@ -75,7 +75,7 @@ export async function DestinationPage({ params }: { params: Promise<{ destinatio
       ) : (
         <>
           <section className="space-y-4">
-            <h2 className="font-heading text-xl font-semibold">Compare organizers</h2>
+            <h2 className="type-3">Compare organizers</h2>
             <ul className="divide-y rounded-xl border">
               {treks.map((trek) => {
                 const rating = ratings.get(trek.id);
@@ -130,7 +130,7 @@ export async function DestinationPage({ params }: { params: Promise<{ destinatio
 
           {batches.length > 0 && (
             <section className="space-y-4">
-              <h2 className="font-heading text-xl font-semibold">Upcoming batches</h2>
+              <h2 className="type-3">Upcoming batches</h2>
               <div className="overflow-x-auto rounded-xl border">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 text-left text-muted-foreground">

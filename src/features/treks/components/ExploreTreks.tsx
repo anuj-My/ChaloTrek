@@ -72,8 +72,8 @@ export async function ExploreTreks({ searchParams }: { searchParams: SearchParam
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-10">
       <div className="space-y-2">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">Explore treks</h1>
-        <p className="max-w-2xl text-lg text-muted-foreground">
+        <h1 className="type-1">Explore treks</h1>
+        <p className="lead max-w-2xl">
           Compare treks from verified organizers, with real dates, prices and seats left.
         </p>
       </div>

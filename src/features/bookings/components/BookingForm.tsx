@@ -38,7 +38,7 @@ export function BookingForm({ batch, maxPeople, defaultEmail }: Props) {
       <input type="hidden" name="batch_id" value={batch.id} />
 
       <section className="space-y-4">
-        <h2 className="font-heading text-lg font-semibold">Who&apos;s going</h2>
+        <h2 className="type-4">Who&apos;s going</h2>
         <FormField label="Number of people" htmlFor="num_people" hint={`Up to ${maxPeople} in one booking.`}>
           <NativeSelect id="num_people" name="num_people" value={people} onChange={(e) => setPeople(Number(e.target.value))}>
             {Array.from({ length: maxPeople }, (_, i) => (
@@ -189,7 +189,7 @@ function ParticipantFields({ index, errors }: { index: number; errors: Record<st
 
   return (
     <fieldset className="space-y-4">
-      <legend className="font-heading text-lg font-semibold">Person {index + 1}</legend>
+      <legend className="type-4">Person {index + 1}</legend>
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField label="Full name" htmlFor={id("full_name")} error={error("full_name")} hint="As on their ID">
           <Input id={id("full_name")} name={name("full_name")} autoComplete={index === 0 ? "name" : "off"} required aria-invalid={!!error("full_name")} />

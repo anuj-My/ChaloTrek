@@ -13,7 +13,7 @@ export async function TrekList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-heading text-2xl font-semibold">Treks</h1>
+        <h1 className="type-2">Treks</h1>
         <Link href="/dashboard/treks/new" className={buttonVariants()}>
           New trek
         </Link>

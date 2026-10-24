@@ -19,7 +19,7 @@ export async function NewTrek() {
         <Link href="/dashboard/treks" className="text-sm text-muted-foreground hover:text-foreground">
           ← Treks
         </Link>
-        <h1 className="font-heading text-2xl font-semibold">New trek</h1>
+        <h1 className="type-2">New trek</h1>
         <p className="text-muted-foreground">It stays a draft until you publish it. Add batches after saving.</p>
       </div>
       <TrekForm organizerSlug={organizer.slug} policies={policies} destinations={destinations} />

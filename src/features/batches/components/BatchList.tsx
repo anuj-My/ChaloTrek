@@ -13,7 +13,7 @@ export async function BatchList() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="font-heading text-2xl font-semibold">Upcoming batches</h1>
+        <h1 className="type-2">Upcoming batches</h1>
         <p className="text-muted-foreground">To add or edit a batch, open its trek.</p>
       </div>
 

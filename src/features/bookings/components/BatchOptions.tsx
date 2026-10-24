@@ -12,7 +12,7 @@ type Props = { batches: PublicTrek["batches"]; trekPath: string };
 export function BatchOptions({ batches, trekPath }: Props) {
   return (
     <section className="space-y-4 rounded-xl border p-5">
-      <h2 className="font-heading text-xl font-semibold">Upcoming batches</h2>
+      <h2 className="type-3">Upcoming batches</h2>
 
       {batches.length === 0 ? (
         <p className="text-sm text-muted-foreground">No upcoming batches right now. Check back soon.</p>
@@ -29,7 +29,7 @@ export function BatchOptions({ batches, trekPath }: Props) {
                     {!bookable && <Badge variant="secondary">{batch.status === "closed" ? "Closed" : "Full"}</Badge>}
                   </div>
                   <p className="text-sm">
-                    <span className="font-medium">{formatRupees(batch.price_paise)}</span>
+                    <span className="font-medium tabular-nums">{formatRupees(batch.price_paise)}</span>
                     <span className="text-muted-foreground"> per person</span>
                   </p>
                   {bookable && (
